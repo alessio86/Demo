@@ -1,0 +1,1573 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestionale Struttura - Demo</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+<style>
+  :root { --brand:#1F4E79; --brand-2:#2F6AA3; --side-w:236px; }
+  body { background:#f3f6fa; }
+  .bg-brand { background:var(--brand)!important; }
+  .text-brand { color:var(--brand)!important; }
+  .btn-brand { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .btn-brand:hover { background:var(--brand-2); color:#fff; }
+  .demo-banner { background:#fff3cd; color:#664d03; font-size:.8rem; text-align:center; padding:.3rem 1rem; border-bottom:1px solid #ffe69c; }
+  .navbar .form-select { max-width:190px; background-color:var(--brand-2); color:#fff; border-color:#4b80b5; }
+  .navbar .form-select option { color:#000; }
+  .sidebar { width:var(--side-w); flex:0 0 var(--side-w); background:#fff; border-right:1px solid #dee2e6; position:sticky; top:56px; height:calc(100vh - 56px); overflow:auto; }
+  .side-link { display:flex; gap:.65rem; align-items:center; padding:.55rem .85rem; border-radius:.5rem; color:#334155; text-decoration:none; font-size:.93rem; margin-bottom:2px; }
+  .side-link:hover { background:#eef3f9; color:#1e293b; }
+  .side-link.active { background:#e0ecfb; color:var(--brand); font-weight:600; }
+  main { min-width:0; }
+  .card { border:1px solid #e3e8ef; box-shadow:0 1px 2px rgba(16,24,40,.04); }
+  .kpi .label { font-size:.8rem; color:#6b7280; }
+  .kpi .value { font-size:1.55rem; font-weight:700; line-height:1.2; }
+  .page-title { color:var(--brand); font-weight:700; font-size:1.45rem; margin:0; }
+  tr.clickable { cursor:pointer; }
+  .avatar { width:56px; height:56px; border-radius:50%; background:#e0ecfb; color:var(--brand); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:1.2rem; flex:0 0 56px; }
+  .bars { display:flex; align-items:flex-end; gap:.5rem; height:190px; padding-top:1rem; }
+  .bar { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; min-width:0; }
+  .bar .fill { width:68%; background:#93b8f0; border-radius:4px 4px 0 0; min-height:2px; }
+  .bar.cur .fill { background:#3b82f6; }
+  .bar .v { font-size:.68rem; color:#6b7280; margin-bottom:2px; white-space:nowrap; }
+  .bar .m { font-size:.75rem; color:#6b7280; margin-top:4px; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+  .cal-head { text-align:center; font-size:.78rem; font-weight:600; color:#6b7280; padding:.25rem 0; }
+  .cal-day { min-height:96px; background:#fff; border:1px solid #e3e8ef; border-radius:6px; padding:.3rem; font-size:.78rem; overflow:hidden; }
+  .cal-day.out { background:#f8fafc; color:#94a3b8; }
+  .cal-day.has { cursor:pointer; }
+  .cal-day.has:hover { border-color:#3b82f6; }
+  .cal-day .num { font-weight:600; }
+  .cal-day.today .num { background:#3b82f6; color:#fff; border-radius:50%; display:inline-flex; width:22px; height:22px; align-items:center; justify-content:center; }
+  .cal-day .badge { display:block; margin-top:3px; font-size:.66rem; white-space:normal; text-align:left; }
+  .pres-input { width:66px; text-align:center; }
+  .pres-input.changed { border-color:#3b82f6; background:#eff6ff; }
+  .paper { background:#fff; box-shadow:0 2px 10px rgba(0,0,0,.08); padding:2rem; border-radius:4px; }
+  .hex { font-family:ui-monospace,Consolas,monospace; font-size:.76rem; word-break:break-all; }
+  .step-list li { padding:.2rem 0; }
+  .nav-tabs .nav-link { color:#475569; }
+  .nav-tabs .nav-link.active { color:var(--brand); font-weight:600; }
+  .login-wrap { min-height:calc(100vh - 32px); display:flex; align-items:center; justify-content:center; padding:1rem; }
+  .login-card { max-width:420px; width:100%; }
+  .acct { cursor:pointer; }
+  .acct:hover { background:#f1f5f9; }
+  .filter-pills .btn { border-radius:999px; }
+  @media (max-width: 575.98px) {
+    .cal-day { min-height:64px; padding:.2rem; }
+    .cal-day .badge { font-size:.58rem; padding:.15rem .25rem; }
+    .kpi .value { font-size:1.25rem; }
+    .paper { padding:1rem; }
+  }
+  @media print {
+    body * { visibility:hidden; }
+    #print-area, #print-area * { visibility:visible; }
+    #print-area { position:absolute; left:0; top:0; width:100%; box-shadow:none; padding:0; }
+    body { background:#fff; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="modal fade" id="dlg" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button></div>
+      <div class="modal-body"></div>
+      <div class="modal-footer"></div>
+    </div>
+  </div>
+</div>
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toasts" style="z-index:2000"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   DEMO - Gestionale struttura
+   Tutti i dati sono di fantasia e vivono solo in memoria nel browser.
+   Nessun invio reale di email/SMS. Ricaricando la pagina si riparte.
+   ===================================================================== */
+
+const TODAY = '2026-10-22';           // data "di oggi" fissa per la demo
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const EUR = new Intl.NumberFormat('it-IT', { style:'currency', currency:'EUR' });
+const eur = v => EUR.format(v || 0);
+const r2 = v => Math.round(v * 100) / 100;
+const fnum = v => (Math.round(v * 100) / 100).toLocaleString('it-IT');
+const pad = n => String(n).padStart(2, '0');
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const MESI = ['gennaio','febbraio','marzo','aprile','maggio','giugno','luglio','agosto','settembre','ottobre','novembre','dicembre'];
+const GG = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+
+const D = {
+  parse(s) { const [y,m,d] = s.split('-').map(Number); return new Date(Date.UTC(y, m-1, d)); },
+  fmt(dt) { return dt.toISOString().slice(0, 10); },
+  add(s, n) { const d = D.parse(s); d.setUTCDate(d.getUTCDate() + n); return D.fmt(d); },
+  dow(s) { return (D.parse(s).getUTCDay() + 6) % 7; },          // 0 = lunedi
+  weekStart(s) { return D.add(s, -D.dow(s)); },
+  monthEnd(y, m) { return D.fmt(new Date(Date.UTC(y, m, 0))); }, // m 1-based
+  it(s) { if (!s) return ''; const [y,m,d] = s.slice(0,10).split('-'); return `${d}/${m}/${y}`; },
+  mese(ym) { const [y,m] = ym.split('-'); return `${cap(MESI[+m-1])} ${y}`; },
+};
+function eta(n) { const [y,m,d] = n.split('-').map(Number); const [ty,tm,td] = TODAY.split('-').map(Number); let a = ty - y; if (tm < m || (tm === m && td < d)) a--; return a; }
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => { const r = Math.random()*16|0; return (c==='x'?r:(r&3|8)).toString(16); }));
+function hashStr(s) { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; } return h; }
+function fakeHex(seed, bytes) { let out = '', h = hashStr(seed); for (let i = 0; i < bytes; i++) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; out += pad((h & 255).toString(16)); } return out; }
+const toHex = buf => [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+const fsize = b => b > 1048576 ? (b/1048576).toFixed(1).replace('.',',') + ' MB' : Math.max(1, Math.round(b/1024)) + ' KB';
+
+/* Giorni di chiusura: weekend, festivi, pausa estiva */
+const FESTIVI = new Set(['2026-04-06','2026-04-25','2026-05-01','2026-06-02','2026-11-01','2026-12-08','2026-12-25','2026-12-26']);
+const closed = d => D.dow(d) >= 5 || FESTIVI.has(d) || (d >= '2026-06-13' && d <= '2026-09-06');
+
+/* =========================== DATI DI FANTASIA =========================== */
+const DB = {
+  sedi: [
+    { id:1, nome:'Roma Nord', indirizzo:'Via Nomentana 100, Roma', attiva:true },
+    { id:2, nome:'Roma Sud',  indirizzo:'Via Appia Nuova 200, Roma', attiva:true },
+    { id:3, nome:'Ostia',     indirizzo:'Via del Mare 50, Roma (Ostia)', attiva:true },
+  ],
+  percorsi: [ { id:1, nome:'Base' }, { id:2, nome:'Intensivo' } ],
+  tariffe: [
+    { id:1, sedeId:null, percorsoId:null, prezzo:25, dal:'2026-01-01', al:null },
+    { id:2, sedeId:3,    percorsoId:null, prezzo:22, dal:'2026-01-01', al:null },
+    { id:3, sedeId:null, percorsoId:2,    prezzo:28, dal:'2026-09-01', al:null },
+  ],
+  genitori: [
+    { id:1,  nome:'Paola',   cognome:'Rossi',    email:'paola.rossi@example.it',    telefono:'+39 333 100 0001' },
+    { id:2,  nome:'Andrea',  cognome:'Verdi',    email:'andrea.verdi@example.it',   telefono:'+39 333 100 0002' },
+    { id:3,  nome:'Luca',    cognome:'Bianchi',  email:'luca.bianchi@example.it',   telefono:'+39 333 100 0003' },
+    { id:4,  nome:'Anna',    cognome:'Conti',    email:'anna.conti@example.it',     telefono:'+39 333 100 0004' },
+    { id:5,  nome:'Carlo',   cognome:'Esposito', email:'carlo.esposito@example.it', telefono:'+39 333 100 0005' },
+    { id:6,  nome:'Elena',   cognome:'Ferrari',  email:'elena.ferrari@example.it',  telefono:'' },
+    { id:7,  nome:'Paolo',   cognome:'Greco',    email:'paolo.greco@example.it',    telefono:'+39 333 100 0007' },
+    { id:8,  nome:'Rita',    cognome:'Marino',   email:'rita.marino@example.it',    telefono:'+39 333 100 0008' },
+    { id:9,  nome:'Marta',   cognome:'Russo',    email:'',                          telefono:'+39 333 100 0009' },
+    { id:10, nome:'Giorgio', cognome:'Colombo',  email:'giorgio.colombo@example.it',telefono:'+39 333 100 0010' },
+    { id:11, nome:'Valeria', cognome:'Ricci',    email:'valeria.ricci@example.it',  telefono:'+39 333 100 0011' },
+    { id:12, nome:'Simona',  cognome:'Gallo',    email:'simona.gallo@example.it',   telefono:'+39 333 100 0012' },
+  ],
+  // giorni/ore = frequenza prevista (0 = lunedi)
+  iscritti: [
+    { id:1,  nome:'Marco',   cognome:'Rossi',    nascita:'2013-03-14', cf:'RSSMRC13C14H501X', indirizzo:'Via Esempio 10, Roma', email:'', telefono:'', frequenza:'Mensile',     giorni:[0,2,3],     ore:2,   note:'' },
+    { id:2,  nome:'Giulia',  cognome:'Bianchi',  nascita:'2011-06-02', cf:'BNCGLI11H42H501Y', indirizzo:'Via Tuscolana 5, Roma', email:'', telefono:'', frequenza:'Mensile',    giorni:[0,2],       ore:1.5, note:'' },
+    { id:3,  nome:'Matteo',  cognome:'Conti',    nascita:'2015-01-20', cf:'CNTMTT15A20H501Z', indirizzo:'Via Salaria 80, Roma', email:'', telefono:'', frequenza:'Settimanale', giorni:[0,1,2,4],   ore:1.5, note:'' },
+    { id:4,  nome:'Sara',    cognome:'Esposito', nascita:'2010-09-11', cf:'SPSSRA10P51H501K', indirizzo:'Via dei Pescatori 3, Ostia', email:'', telefono:'', frequenza:'Mensile', giorni:[1,3],   ore:2,   note:'' },
+    { id:5,  nome:'Luca',    cognome:'Ferrari',  nascita:'2014-02-08', cf:'FRRLCU14B08H501W', indirizzo:'Via Nomentana 220, Roma', email:'', telefono:'', frequenza:'Mensile',  giorni:[1,2,4],     ore:1.5, note:'' },
+    { id:6,  nome:'Chiara',  cognome:'Greco',    nascita:'2012-11-30', cf:'GRCCHR12S70H501Q', indirizzo:'Via Appia 300, Roma', email:'', telefono:'', frequenza:'Settimanale',  giorni:[0,2,4],     ore:2,   note:'' },
+    { id:7,  nome:'Davide',  cognome:'Marino',   nascita:'2008-05-15', cf:'MRNDVD08E15H501P', indirizzo:'Via Ostiense 40, Ostia', email:'davide.marino@example.it', telefono:'', frequenza:'Mensile', giorni:[1,3], ore:1.5, note:'' },
+    { id:8,  nome:'Elisa',   cognome:'Russo',    nascita:'2013-07-07', cf:'RSSLSE13L47H501M', indirizzo:'Via Prenestina 12, Roma', email:'', telefono:'', frequenza:'Mensile', giorni:[2,4],       ore:1.5, note:'' },
+    { id:9,  nome:'Andrea',  cognome:'Romano',   nascita:'2007-12-01', cf:'RMNNDR07T01H501N', indirizzo:'Via Casilina 90, Roma', email:'andrea.romano@example.it', telefono:'+39 333 100 0099', frequenza:'Mensile', giorni:[1,3], ore:1, note:'Maggiorenne: paga direttamente.' },
+    { id:10, nome:'Sofia',   cognome:'Colombo',  nascita:'2016-04-22', cf:'CLMSFO16D62H501R', indirizzo:'Via Flaminia 70, Roma', email:'', telefono:'', frequenza:'Mensile',   giorni:[0,2,4],     ore:1.5, note:'' },
+    { id:11, nome:'Lorenzo', cognome:'Ricci',    nascita:'2012-08-19', cf:'RCCLNZ12M19H501S', indirizzo:'Lungomare 15, Ostia', email:'', telefono:'', frequenza:'Settimanale', giorni:[1,3],       ore:2,   note:'' },
+    { id:12, nome:'Martina', cognome:'Gallo',    nascita:'2014-10-03', cf:'GLLMTN14R43H501T', indirizzo:'Via Ardeatina 25, Roma', email:'', telefono:'', frequenza:'Mensile', giorni:[0,1,2,3,4], ore:1,   note:'' },
+    { id:13, nome:'Tommaso', cognome:'Rossi',    nascita:'2016-01-09', cf:'RSSTMS16A09H501U', indirizzo:'Via Esempio 10, Roma', email:'', telefono:'', frequenza:'Mensile',   giorni:[1,3],       ore:1.5, note:'Fratello di Marco Rossi.' },
+  ],
+  iscrizioni: [
+    { id:1,  iscrittoId:1,  sedeId:2, percorsoId:1, dal:'2026-03-02', al:'2026-06-12', motivo:'Trasferito a Roma Nord' },
+    { id:2,  iscrittoId:1,  sedeId:1, percorsoId:2, dal:'2026-09-07', al:null },
+    { id:3,  iscrittoId:2,  sedeId:2, percorsoId:1, dal:'2026-03-02', al:null },
+    { id:4,  iscrittoId:3,  sedeId:1, percorsoId:1, dal:'2026-04-07', al:null },
+    { id:5,  iscrittoId:4,  sedeId:3, percorsoId:2, dal:'2026-03-02', al:null },
+    { id:6,  iscrittoId:5,  sedeId:1, percorsoId:1, dal:'2026-03-02', al:null },
+    { id:7,  iscrittoId:6,  sedeId:2, percorsoId:2, dal:'2026-03-02', al:null },
+    { id:8,  iscrittoId:7,  sedeId:3, percorsoId:1, dal:'2026-03-02', al:'2026-06-12', motivo:'Percorso concluso' },
+    { id:9,  iscrittoId:8,  sedeId:1, percorsoId:1, dal:'2026-09-14', al:null },
+    { id:10, iscrittoId:9,  sedeId:2, percorsoId:1, dal:'2026-03-02', al:null },
+    { id:11, iscrittoId:10, sedeId:1, percorsoId:2, dal:'2026-03-02', al:null },
+    { id:12, iscrittoId:11, sedeId:3, percorsoId:1, dal:'2026-05-04', al:null },
+    { id:13, iscrittoId:12, sedeId:2, percorsoId:1, dal:'2026-09-07', al:null },
+    { id:14, iscrittoId:13, sedeId:1, percorsoId:1, dal:'2026-09-07', al:null },
+  ],
+  legami: [
+    { iscrittoId:1,  genitoreId:1,  parentela:'Madre', pagatore:true },
+    { iscrittoId:1,  genitoreId:2,  parentela:'Padre', pagatore:false },
+    { iscrittoId:13, genitoreId:1,  parentela:'Madre', pagatore:true },
+    { iscrittoId:13, genitoreId:2,  parentela:'Padre', pagatore:false },
+    { iscrittoId:2,  genitoreId:3,  parentela:'Padre', pagatore:true },
+    { iscrittoId:3,  genitoreId:4,  parentela:'Madre', pagatore:true },
+    { iscrittoId:4,  genitoreId:5,  parentela:'Padre', pagatore:true },
+    { iscrittoId:5,  genitoreId:6,  parentela:'Madre', pagatore:true },
+    { iscrittoId:6,  genitoreId:7,  parentela:'Padre', pagatore:true },
+    { iscrittoId:7,  genitoreId:8,  parentela:'Madre', pagatore:true },
+    { iscrittoId:8,  genitoreId:9,  parentela:'Madre', pagatore:true },
+    { iscrittoId:10, genitoreId:10, parentela:'Padre', pagatore:true },
+    { iscrittoId:11, genitoreId:11, parentela:'Tutore', pagatore:true },
+    { iscrittoId:12, genitoreId:12, parentela:'Madre', pagatore:true },
+  ],
+  utenti: [
+    { id:1, nome:'Laura', cognome:'Fontana', email:'l.fontana@struttura.onmicrosoft.com', ruolo:'Amministratore', sedi:[1,2,3], attivo:true,  oid:'7c1e2a40-3b5d-4f1e-9a2b-1d2e3f4a5b6c' },
+    { id:2, nome:'Anna',  cognome:'Neri',    email:'a.neri@struttura.onmicrosoft.com',    ruolo:'Segreteria',     sedi:[1],     attivo:true,  oid:'a2b3c4d5-6e7f-4a8b-9c0d-1e2f3a4b5c6d' },
+    { id:3, nome:'Sara',  cognome:'Verdi',   email:'s.verdi@struttura.onmicrosoft.com',   ruolo:'Segreteria',     sedi:[2,3],   attivo:true,  oid:'b3c4d5e6-7f8a-4b9c-8d1e-2f3a4b5c6d7e' },
+    { id:4, nome:'Marco', cognome:'Gallo',   email:'m.gallo@struttura.onmicrosoft.com',   ruolo:'Segreteria',     sedi:[3],     attivo:false, oid:'c4d5e6f7-8a9b-4c0d-9e2f-3a4b5c6d7e8f' },
+  ],
+  presenze: [], pagamenti: [], fatture: {}, notifiche: [], documenti: [], audit: [],
+};
+const SEQ = { presenza:1, pagamento:1, notifica:1, documento:1, iscritto:100, genitore:100, iscrizione:100, utente:100, sede:100, tariffa:100 };
+const nextId = k => SEQ[k]++;
+
+/* ============================ HELPER DOMINIO ============================ */
+const isc = id => DB.iscritti.find(x => x.id === +id);
+const gen = id => DB.genitori.find(x => x.id === +id);
+const sede = id => DB.sedi.find(x => x.id === +id);
+const perc = id => DB.percorsi.find(x => x.id === +id);
+const nomeIsc = s => `${s.cognome} ${s.nome}`;
+const iscrizioniDi = id => DB.iscrizioni.filter(i => i.iscrittoId === +id).sort((a,b) => a.dal.localeCompare(b.dal));
+const iscrizioneCorrente = id => { const l = iscrizioniDi(id); return l[l.length - 1]; };
+const isAttivo = s => { const i = iscrizioneCorrente(s.id); return i && (!i.al || i.al >= TODAY); };
+const isMinore = s => eta(s.nascita) < 18;
+
+/** Tariffa piu specifica valida in una data: sede+percorso > sede > percorso > generale */
+function tariffaPer(sedeId, percorsoId, d) {
+  const ok = DB.tariffe.filter(t => t.dal <= d && (!t.al || t.al >= d)
+    && (t.sedeId === null || t.sedeId === sedeId) && (t.percorsoId === null || t.percorsoId === percorsoId));
+  ok.sort((a,b) => ((b.sedeId?2:0)+(b.percorsoId?1:0)) - ((a.sedeId?2:0)+(a.percorsoId?1:0)) || b.dal.localeCompare(a.dal));
+  return ok[0] || { prezzo:0 };
+}
+
+/** Chi paga: genitore pagatore, oppure l'iscritto stesso se maggiorenne */
+function pagatore(stId) {
+  const l = DB.legami.find(x => x.iscrittoId === +stId && x.pagatore);
+  if (l) { const g = gen(l.genitoreId); return { nome:`${g.nome} ${g.cognome}`, email:g.email, telefono:g.telefono, ruolo:l.parentela }; }
+  const s = isc(stId);
+  return { nome:`${s.nome} ${s.cognome}`, email:s.email, telefono:s.telefono, ruolo: isMinore(s) ? 'Nessun pagatore indicato' : 'Iscritto (maggiorenne)', manca: isMinore(s) };
+}
+
+/* ---- Quote: calcolate dalle presenze (ore x prezzo applicato) ---- */
+function periodiIscritto(st) {
+  const iscs = iscrizioniDi(st.id);
+  if (!iscs.length) return [];
+  const start = iscs[0].dal;
+  const lastEnd = iscs.some(i => !i.al) ? TODAY : iscs.map(i => i.al).sort().pop();
+  const out = [];
+  if (st.frequenza === 'Mensile') {
+    let [y, m] = start.split('-').map(Number);
+    for (;;) {
+      const dal = `${y}-${pad(m)}-01`;
+      if (dal > lastEnd) break;
+      const ny = m === 12 ? y + 1 : y, nm = m === 12 ? 1 : m + 1;
+      out.push({ tipo:'Mensile', dal, al:D.monthEnd(y, m), scadenza:`${ny}-${pad(nm)}-10` });
+      y = ny; m = nm;
+    }
+  } else {
+    for (let dal = D.weekStart(start); dal <= lastEnd; dal = D.add(dal, 7))
+      out.push({ tipo:'Settimanale', dal, al:D.add(dal, 6), scadenza:D.add(dal, 13) });
+  }
+  return out;
+}
+let _quote = null;
+const invalidate = () => { _quote = null; };
+function quote() {
+  if (_quote) return _quote;
+  const res = [];
+  for (const st of DB.iscritti) {
+    const pres = DB.presenze.filter(p => p.iscrittoId === st.id);
+    for (const p of periodiIscritto(st)) {
+      const pp = pres.filter(x => x.data >= p.dal && x.data <= p.al);
+      const totale = r2(pp.reduce((s, x) => s + x.ore * x.prezzo, 0));
+      if (totale === 0) continue;
+      const key = `${st.id}|${p.dal}`;
+      const pagato = r2(DB.pagamenti.filter(x => x.key === key).reduce((s, x) => s + x.importo, 0));
+      const residuo = r2(totale - pagato);
+      const inCorso = p.al >= TODAY;
+      let stato;
+      if (residuo <= 0.004) stato = 'Pagata';
+      else if (inCorso) stato = 'In corso';
+      else if (p.scadenza < TODAY) stato = 'Scaduta';
+      else if (pagato > 0) stato = 'Parziale';
+      else stato = 'Da pagare';
+      res.push({ ...p, key, iscrittoId:st.id, totale, pagato, residuo, stato, ore:pp.reduce((s,x)=>s+x.ore,0),
+                 fattura:DB.fatture[key] || null, pagatore:pagatore(st.id) });
+    }
+  }
+  return (_quote = res);
+}
+const quotaByKey = k => quote().find(q => q.key === k);
+const APERTE = ['Da pagare','Parziale','Scaduta'];
+const STATO_CLS = { 'Pagata':'success', 'Da pagare':'warning', 'Parziale':'info', 'Scaduta':'danger', 'In corso':'secondary' };
+const PLURALE = { 'Pagata':'pagate', 'Da pagare':'da pagare', 'Parziale':'parziali', 'Scaduta':'scadute', 'In corso':'in corso' };
+const badge = s => `<span class="badge rounded-pill text-bg-${STATO_CLS[s] || 'light'}">${esc(s)}</span>`;
+function periodo(q) {
+  if (q.tipo === 'Mensile') return D.mese(q.dal.slice(0, 7));
+  return `Sett. ${D.it(q.dal).slice(0,5)} - ${D.it(q.al)}`;
+}
+
+/* ============================ GENERAZIONE DATI ============================ */
+function seed() {
+  for (const i of DB.iscrizioni) {
+    const st = isc(i.iscrittoId);
+    const end = i.al && i.al < TODAY ? i.al : D.add(TODAY, -1);
+    for (let d = i.dal; d <= end; d = D.add(d, 1)) {
+      if (closed(d) || !st.giorni.includes(D.dow(d))) continue;
+      if (hashStr(d + '#' + st.id) % 10 === 0) continue;          // qualche assenza
+      DB.presenze.push({ id:nextId('presenza'), iscrittoId:st.id, iscrizioneId:i.id, sedeId:i.sedeId, data:d, ore:st.ore,
+                         prezzo:tariffaPer(i.sedeId, i.percorsoId, d).prezzo });
+    }
+  }
+  // Pagamenti: quote chiuse pagate, con alcune eccezioni per mostrare gli stati
+  const EXC = { '4|2026-09-01':0, '2|2026-09-01':60, '9|2026-09-01':0, '3|2026-10-12':0, '11|2026-10-05':0, '11|2026-10-12':0, '6|2026-10-12':40 };
+  const metodi = ['Bonifico','Contanti','POS'];
+  let k = 0;
+  for (const q of quote()) {
+    if (q.stato === 'In corso') continue;
+    const ex = EXC[q.key];
+    const importo = ex === undefined ? q.totale : ex;
+    if (!importo) continue;
+    let data = D.add(q.al, 3); if (data >= TODAY) data = D.add(TODAY, -1);
+    DB.pagamenti.push({ id:nextId('pagamento'), key:q.key, iscrittoId:q.iscrittoId, importo, data, metodo:metodi[k++ % 3], note:'', by: k % 2 ? 'Anna Neri' : 'Sara Verdi' });
+  }
+  invalidate();
+  // Fatture (emesse con Aruba): numero registrato sulle quote pagate fino a settembre
+  let n = 1;
+  quote().filter(q => q.stato === 'Pagata' && q.al < '2026-10-01').sort((a,b) => a.al.localeCompare(b.al))
+    .forEach(q => { DB.fatture[q.key] = `FT-2026/${String(n++).padStart(4,'0')}`; });
+  invalidate();
+  // Documenti di esempio (solo metadati)
+  const docs = [
+    [1,'Consenso_privacy_2026.pdf','Consenso','2026-09-07','Anna Neri',182000],
+    [1,'Certificato_2026.pdf','Certificato','2026-09-10','Anna Neri',344000],
+    [1,'Relazione_scuola_I_quadrimestre.pdf','Relazione','2026-03-05','Laura Fontana',512000],
+    [2,'Consenso_privacy_2026.pdf','Consenso','2026-03-02','Sara Verdi',176000],
+    [4,'Consenso_privacy_2026.pdf','Consenso','2026-03-02','Sara Verdi',179000],
+    [4,'Certificato_2026.pdf','Certificato','2026-03-09','Sara Verdi',298000],
+    [6,'Consenso_privacy_2026.pdf','Consenso','2026-03-02','Sara Verdi',181000],
+    [6,'Relazione_scuola.pdf','Relazione','2026-09-15','Laura Fontana',455000],
+    [9,'Documento_identita.jpg','Identita','2026-03-02','Sara Verdi',820000],
+    [10,'Consenso_privacy_2026.pdf','Consenso','2026-03-02','Anna Neri',177000],
+    [13,'Consenso_privacy_2026.pdf','Consenso','2026-09-07','Anna Neri',183000],
+  ];
+  for (const [sid, nome, cat, data, by, size] of docs) {
+    const id = nextId('documento');
+    DB.documenti.push({ id, iscrittoId:sid, nome, categoria:cat, data, by, size, demo:true,
+      blobName:uuid(), kek:'kek-documenti/3f9a1c', type: nome.endsWith('.jpg') ? 'image/jpeg' : 'application/pdf' });
+  }
+  // Notifiche e audit di esempio
+  const q4 = quotaByKey('4|2026-09-01');
+  DB.notifiche.push({ id:nextId('notifica'), key:'4|2026-09-01', canale:'Email', dest:'carlo.esposito@example.it', importo:q4 ? q4.residuo : 0, ts:'2026-10-12T10:15', by:'Sara Verdi', esito:'Inviata' });
+  const A = (ts, user, azione, oggetto, sedeId) => DB.audit.push({ ts, user, azione, oggetto, sedeId });
+  A('2026-10-20T08:58','Anna Neri','Login','Accesso con Entra ID',null);
+  A('2026-10-20T09:05','Anna Neri','Lettura','Scheda iscritto: Rossi Marco',1);
+  A('2026-10-20T09:06','Anna Neri','Apertura documento','Certificato_2026.pdf (Rossi Marco)',1);
+  A('2026-10-21T09:12','Sara Verdi','Login','Accesso con Entra ID',null);
+  A('2026-10-21T09:30','Sara Verdi','Pagamento','Pagamento parziale: Greco Chiara, sett. 12/10',2);
+  A('2026-10-21T17:40','Laura Fontana','Login','Accesso con Entra ID',null);
+  A('2026-10-21T17:44','Laura Fontana','Modifica tariffa','Consultazione tariffe',null);
+}
+
+/* ============================ CIFRATURA (WebCrypto) ============================
+   Stessa logica del backend descritta nel documento:
+   - DEK casuale AES-256-GCM per ogni file, nonce 12 byte
+   - DEK protetta ("wrap") con la KEK RSA-OAEP-256
+   Nella demo la KEK e generata nel browser. In produzione sta in Azure Key Vault
+   e la cifratura avviene sul server .NET, mai nel browser. */
+const KMS = {
+  kek:null, version:'kek-documenti/' + fakeHex('kek', 3),
+  async init() {
+    if (!window.crypto || !crypto.subtle) return;
+    try {
+      this.kek = await crypto.subtle.generateKey({ name:'RSA-OAEP', modulusLength:2048, publicExponent:new Uint8Array([1,0,1]), hash:'SHA-256' }, false, ['wrapKey','unwrapKey']);
+    } catch (e) { this.kek = null; }
+  }
+};
+async function encryptFile(buf) {
+  const dek = await crypto.subtle.generateKey({ name:'AES-GCM', length:256 }, true, ['encrypt','decrypt']);
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, dek, buf);
+  const wrapped = await crypto.subtle.wrapKey('raw', dek, KMS.kek.publicKey, { name:'RSA-OAEP' });
+  const sha = await crypto.subtle.digest('SHA-256', buf);
+  return { ct, iv, wrapped, sha };
+}
+async function decryptFile(doc) {
+  const dek = await crypto.subtle.unwrapKey('raw', doc.wrapped, KMS.kek.privateKey, { name:'RSA-OAEP' }, { name:'AES-GCM' }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:doc.iv }, dek, doc.ct);
+  const sha = toHex(await crypto.subtle.digest('SHA-256', plain));
+  if (sha !== toHex(doc.sha)) throw new Error('Verifica integrita fallita');
+  return plain;
+}
+
+/* ============================ SESSIONE E UI ============================ */
+const S = {
+  user:null, sede:0, after:null, lastScheda:null,
+  iscFiltro:{ q:'', stato:'attivi' },
+  presWeek:D.weekStart(TODAY), presSede:null,
+  quoteFiltro:{ stato:'aperte', tipo:'', q:'', page:1 },
+  docFiltro:{ q:'', cat:'' },
+  cal:{ y:2026, m:10 },
+  rep:{ tipo:'quote', mese:'2026-10', sede:0, stato:'' },
+  adminTab:'utenti', auditFiltro:{ user:'', azione:'' },
+};
+const isAdmin = () => S.user && S.user.ruolo === 'Amministratore';
+const allowedSedi = () => isAdmin() ? DB.sedi.map(s => s.id) : S.user.sedi.slice();
+const scopeSedi = () => S.sede ? [S.sede] : allowedSedi();
+const inScope = st => { const i = iscrizioneCorrente(st.id); return i && scopeSedi().includes(i.sedeId); };
+const userName = () => `${S.user.nome} ${S.user.cognome}`;
+
+function audit(azione, oggetto, sedeId = null) {
+  const t = new Date();
+  DB.audit.push({ ts:`${TODAY}T${pad(t.getHours())}:${pad(t.getMinutes())}:${pad(t.getSeconds())}`, user:userName(), azione, oggetto, sedeId });
+}
+
+function toast(msg, kind = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast align-items-center text-bg-${kind} border-0`;
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<div class="d-flex"><div class="toast-body">${msg}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+  $('#toasts').appendChild(el);
+  const t = new bootstrap.Toast(el, { delay:3500 });
+  el.addEventListener('hidden.bs.toast', () => el.remove());
+  t.show();
+}
+
+function openModal(title, body, footer = '', size = '') {
+  const el = $('#dlg');
+  el.querySelector('.modal-dialog').className = 'modal-dialog modal-dialog-scrollable ' + size;
+  el.querySelector('.modal-title').innerHTML = title;
+  el.querySelector('.modal-body').innerHTML = body;
+  const f = el.querySelector('.modal-footer');
+  f.innerHTML = footer; f.classList.toggle('d-none', !footer);
+  bootstrap.Modal.getOrCreateInstance(el).show();
+}
+const closeModal = () => bootstrap.Modal.getOrCreateInstance($('#dlg')).hide();
+function formErr(msg) { const e = $('#formErr'); if (e) { e.textContent = msg; e.classList.remove('d-none'); } }
+
+/* ============================ LOGIN (Entra ID simulato) ============================ */
+function renderLogin() {
+  $('#app').innerHTML = `
+  <div class="demo-banner"><i class="bi bi-info-circle"></i> Demo dimostrativa: dati di fantasia, nessun dato reale, nessun invio reale di email o SMS.</div>
+  <div class="login-wrap">
+    <div class="card login-card p-4 text-center">
+      <div class="mx-auto mb-3 rounded-3 d-flex align-items-center justify-content-center bg-brand text-white" style="width:56px;height:56px;font-size:1.6rem"><i class="bi bi-buildings"></i></div>
+      <h1 class="h4 text-brand fw-bold mb-1">Accedi al gestionale</h1>
+      <p class="text-body-secondary small mb-4">Accesso riservato agli utenti autorizzati</p>
+      <button class="btn btn-brand btn-lg w-100 mb-3" onclick="App.accountPicker()"><i class="bi bi-microsoft me-2"></i>Accedi con Microsoft</button>
+      <hr>
+      <p class="small text-body-secondary mb-1">Non è possibile registrarsi: gli account sono creati dall'amministratore in Microsoft Entra ID.</p>
+      <p class="small text-body-secondary mb-0">La verifica a due fattori (MFA) è gestita da Microsoft.</p>
+    </div>
+  </div>`;
+}
+
+/* ============================ SHELL ============================ */
+const MENU = [
+  ['dashboard','speedometer2','Dashboard'],
+  ['iscritti','people','Iscritti'],
+  ['presenze','calendar-check','Presenze'],
+  ['quote','cash-coin','Quote e pagamenti'],
+  ['documenti','file-earmark-lock','Documenti'],
+  ['calendario','calendar3','Calendario'],
+  ['report','printer','Report e stampe'],
+  ['admin','shield-lock','Utenti e sedi', true],
+];
+function menuHtml() {
+  return MENU.filter(m => !m[3] || isAdmin()).map(([k, ic, lab]) =>
+    `<a href="#/${k}" class="side-link" data-k="${k}" onclick="App.closeSide()"><i class="bi bi-${ic}"></i>${lab}</a>`).join('');
+}
+function sedeOptions() {
+  const al = allowedSedi();
+  let h = al.length > 1 ? `<option value="0" ${S.sede === 0 ? 'selected' : ''}>Tutte le sedi</option>` : '';
+  h += al.map(id => `<option value="${id}" ${S.sede === id ? 'selected' : ''}>${esc(sede(id).nome)}</option>`).join('');
+  return h;
+}
+function renderShell() {
+  $('#app').innerHTML = `
+  <div class="demo-banner"><i class="bi bi-info-circle"></i> Demo dimostrativa: dati di fantasia, nessun invio reale. Data simulata: ${D.it(TODAY)}.</div>
+  <nav class="navbar navbar-dark bg-brand sticky-top px-2 px-md-3 py-2 flex-nowrap" style="min-height:56px">
+    <div class="d-flex align-items-center gap-2">
+      <button class="btn btn-sm btn-outline-light d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#side" aria-label="Menu"><i class="bi bi-list"></i></button>
+      <span class="navbar-brand fw-semibold mb-0"><i class="bi bi-buildings me-1"></i><span class="d-none d-sm-inline">Gestionale</span></span>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <select class="form-select form-select-sm" id="sedeSel" onchange="App.setSede(this.value)" aria-label="Sede">${sedeOptions()}</select>
+      <button class="btn btn-sm btn-outline-light d-none d-md-inline-block text-nowrap" onclick="App.guida()"><i class="bi bi-question-circle"></i> Guida demo</button>
+      <div class="dropdown">
+        <button class="btn btn-sm btn-light dropdown-toggle text-nowrap" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i> <span class="d-none d-sm-inline">${esc(S.user.nome)}</span></button>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li class="px-3 py-2 small"><div class="fw-semibold">${esc(userName())}</div><div class="text-body-secondary">${esc(S.user.email)}</div>
+            <span class="badge text-bg-primary mt-1">${S.user.ruolo}</span>
+            <div class="text-body-secondary mt-1">Sedi: ${allowedSedi().map(id => esc(sede(id).nome)).join(', ')}</div></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item d-md-none" onclick="App.guida()"><i class="bi bi-question-circle"></i> Guida demo</button></li>
+          <li><button class="dropdown-item" onclick="App.logout()"><i class="bi bi-box-arrow-right"></i> Esci</button></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="d-flex">
+    <aside class="sidebar d-none d-lg-block p-2">${menuHtml()}</aside>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="side" style="width:260px">
+      <div class="offcanvas-header bg-brand text-white"><h5 class="offcanvas-title">Menu</h5><button class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button></div>
+      <div class="offcanvas-body p-2">${menuHtml()}</div>
+    </div>
+    <main id="main" class="flex-grow-1 p-3 p-md-4"></main>
+  </div>`;
+}
+function updateNav(k) { document.querySelectorAll('.side-link').forEach(a => a.classList.toggle('active', a.dataset.k === k)); }
+
+const ROUTES = {};
+function renderMain() {
+  if (!S.user) { renderLogin(); return; }
+  const [page = 'dashboard', arg] = location.hash.replace(/^#\/?/, '').split('/');
+  const fn = ROUTES[page] || ROUTES.dashboard;
+  $('#main').innerHTML = (page === 'admin' && !isAdmin())
+    ? `<div class="alert alert-warning"><i class="bi bi-shield-x"></i> Sezione riservata all'amministratore.</div>`
+    : fn(arg);
+  updateNav(page === 'iscritto' ? 'iscritti' : (ROUTES[page] ? page : 'dashboard'));
+  if (S.after) { const f = S.after; S.after = null; f(); }
+}
+window.addEventListener('hashchange', () => { renderMain(); window.scrollTo(0, 0); });
+
+const header = (title, actions = '', sub = '') => `
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+    <div><h1 class="page-title">${title}</h1>${sub ? `<div class="text-body-secondary small">${sub}</div>` : ''}</div>
+    <div class="d-flex flex-wrap gap-2">${actions}</div>
+  </div>`;
+const scopeLabel = () => S.sede ? sede(S.sede).nome : (allowedSedi().length > 1 ? 'Tutte le sedi' : sede(allowedSedi()[0]).nome);
+
+/* ============================ DASHBOARD ============================ */
+ROUTES.dashboard = () => {
+  const sts = DB.iscritti.filter(inScope);
+  const attivi = sts.filter(isAttivo);
+  const ids = new Set(sts.map(s => s.id));
+  const qs = quote().filter(q => ids.has(q.iscrittoId));
+  const mese = TODAY.slice(0, 7);
+  const incMese = DB.pagamenti.filter(p => ids.has(p.iscrittoId) && p.data.startsWith(mese)).reduce((s, p) => s + p.importo, 0);
+  const aperte = qs.filter(q => APERTE.includes(q.stato));
+  const daInc = aperte.reduce((s, q) => s + q.residuo, 0);
+  const scad = qs.filter(q => q.stato === 'Scaduta');
+  const maturato = qs.filter(q => q.stato === 'In corso').reduce((s, q) => s + q.totale, 0);
+  const oreMese = DB.presenze.filter(p => scopeSedi().includes(p.sedeId) && p.data.startsWith(mese)).reduce((s, p) => s + p.ore, 0);
+  const nuovi = attivi.filter(s => iscrizioniDi(s.id)[0].dal >= '2026-09-01').length;
+
+  const mesi = ['2026-03','2026-04','2026-05','2026-06','2026-07','2026-08','2026-09','2026-10'];
+  const inc = mesi.map(m => DB.pagamenti.filter(p => ids.has(p.iscrittoId) && p.data.startsWith(m)).reduce((s, p) => s + p.importo, 0));
+  const max = Math.max(1, ...inc);
+  const bars = mesi.map((m, i) => `<div class="bar ${m === mese ? 'cur' : ''}" title="${D.mese(m)}: ${eur(inc[i])}">
+      <div class="v">${inc[i] ? (inc[i] >= 1000 ? (inc[i]/1000).toFixed(1).replace('.',',') + 'k' : Math.round(inc[i])) : ''}</div>
+      <div class="fill" style="height:${Math.round(inc[i] / max * 140)}px"></div><div class="m">${cap(MESI[+m.slice(5) - 1]).slice(0,3)}</div></div>`).join('');
+
+  const sediRows = scopeSedi().map(id => ({ s:sede(id), n:attivi.filter(x => iscrizioneCorrente(x.id).sedeId === id).length }));
+  const maxS = Math.max(1, ...sediRows.map(x => x.n));
+  const prox = aperte.slice().sort((a, b) => a.scadenza.localeCompare(b.scadenza)).slice(0, 6);
+
+  const kpi = (lab, val, sub, cls = 'text-body-secondary', ic = '') => `
+    <div class="col-6 col-xl-3"><div class="card kpi h-100"><div class="card-body">
+      <div class="label">${ic ? `<i class="bi bi-${ic} me-1"></i>` : ''}${lab}</div><div class="value my-1">${val}</div><div class="small ${cls}">${sub}</div>
+    </div></div></div>`;
+  return header('Dashboard', `<a href="#/quote" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash-coin"></i> Quote</a><a href="#/presenze" class="btn btn-brand btn-sm"><i class="bi bi-calendar-check"></i> Registra presenze</a>`,
+      `${esc(scopeLabel())} - ${D.mese(mese)}`) + `
+  <div class="row g-3 mb-3">
+    ${kpi('Iscritti attivi', attivi.length, `+${nuovi} da settembre`, 'text-success', 'people')}
+    ${kpi('Incassato ' + MESI[+mese.slice(5) - 1], eur(incMese), `${fnum(oreMese)} ore erogate nel mese`, 'text-body-secondary', 'wallet2')}
+    ${kpi('Da incassare', eur(daInc), `${aperte.length} quote aperte`, 'text-warning-emphasis', 'hourglass-split')}
+    ${kpi('Quote scadute', scad.length, `${eur(scad.reduce((s, q) => s + q.residuo, 0))} da sollecitare`, 'text-danger', 'exclamation-triangle')}
+  </div>
+  <div class="row g-3 mb-3">
+    <div class="col-lg-8"><div class="card h-100"><div class="card-body">
+      <div class="d-flex justify-content-between"><h2 class="h6 text-brand fw-bold mb-0">Incassi per mese</h2><span class="small text-body-secondary">agosto: struttura chiusa</span></div>
+      <div class="bars">${bars}</div>
+    </div></div></div>
+    <div class="col-lg-4"><div class="card h-100"><div class="card-body">
+      <h2 class="h6 text-brand fw-bold">Iscritti attivi per sede</h2>
+      ${sediRows.map(x => `<div class="mt-3"><div class="d-flex justify-content-between small"><span>${esc(x.s.nome)}</span><b>${x.n}</b></div>
+        <div class="progress mt-1" style="height:8px"><div class="progress-bar" style="width:${x.n / maxS * 100}%"></div></div></div>`).join('')}
+      <div class="mt-4 small text-body-secondary">Quote del mese in corso maturate finora: <b class="text-body">${eur(maturato)}</b></div>
+    </div></div></div>
+  </div>
+  <div class="card"><div class="card-body">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h6 text-brand fw-bold mb-0">Prossime scadenze e quote da sollecitare</h2><a href="#/calendario" class="small">Apri calendario</a></div>
+    ${prox.length ? `<div class="table-responsive"><table class="table table-sm align-middle mb-0">
+      <thead><tr><th>Iscritto / pagatore</th><th>Periodo</th><th class="text-end">Residuo</th><th>Scadenza</th><th>Stato</th><th></th></tr></thead>
+      <tbody>${prox.map(q => { const s = isc(q.iscrittoId); return `<tr>
+        <td><a href="#/iscritto/${s.id}" class="fw-semibold text-decoration-none">${esc(nomeIsc(s))}</a><div class="small text-body-secondary">${esc(q.pagatore.nome)}</div></td>
+        <td>${periodo(q)}</td><td class="text-end">${eur(q.residuo)}</td><td>${D.it(q.scadenza)}</td><td>${badge(q.stato)}</td>
+        <td class="text-end"><button class="btn btn-sm btn-outline-warning" onclick="App.sollecito('${q.key}')"><i class="bi bi-send"></i><span class="d-none d-md-inline"> Sollecita</span></button></td></tr>`; }).join('')}</tbody></table></div>`
+      : '<p class="text-body-secondary mb-0">Nessuna quota aperta.</p>'}
+  </div></div>`;
+};
+
+/* ============================ ISCRITTI ============================ */
+function residuoIscritto(id) { return quote().filter(q => q.iscrittoId === id && APERTE.includes(q.stato)).reduce((s, q) => s + q.residuo, 0); }
+function iscrittiTable() {
+  const f = S.iscFiltro, q = f.q.trim().toLowerCase();
+  const list = DB.iscritti.filter(inScope)
+    .filter(s => f.stato === 'tutti' || (f.stato === 'attivi' ? isAttivo(s) : !isAttivo(s)))
+    .filter(s => !q || `${s.nome} ${s.cognome} ${s.cf}`.toLowerCase().includes(q))
+    .sort((a, b) => nomeIsc(a).localeCompare(nomeIsc(b)));
+  if (!list.length) return `<tr><td colspan="8" class="text-center text-body-secondary py-4">Nessun iscritto trovato.</td></tr>`;
+  return list.map(s => {
+    const i = iscrizioneCorrente(s.id), p = pagatore(s.id), res = residuoIscritto(s.id);
+    return `<tr class="clickable" onclick="location.hash='#/iscritto/${s.id}'">
+      <td><span class="fw-semibold">${esc(nomeIsc(s))}</span> ${isMinore(s) ? '<span class="badge text-bg-light border ms-1">Minore</span>' : ''}</td>
+      <td>${eta(s.nascita)}</td><td>${esc(sede(i.sedeId).nome)}</td><td>${esc(perc(i.percorsoId).nome)}</td>
+      <td>${esc(p.nome)}${p.manca ? ' <i class="bi bi-exclamation-triangle text-danger" title="Minore senza genitore pagatore"></i>' : ''}</td>
+      <td>${s.frequenza}</td>
+      <td>${isAttivo(s) ? '<span class="badge text-bg-success">Attivo</span>' : '<span class="badge text-bg-secondary">Chiuso</span>'}</td>
+      <td class="text-end ${res > 0 ? 'fw-semibold' : 'text-body-secondary'}">${eur(res)}</td></tr>`;
+  }).join('');
+}
+ROUTES.iscritti = () => {
+  const f = S.iscFiltro;
+  return header('Iscritti', `<button class="btn btn-brand btn-sm" onclick="App.nuovoIscritto()"><i class="bi bi-plus-lg"></i> Nuovo iscritto</button>`, esc(scopeLabel())) + `
+  <div class="card"><div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-md-6"><div class="input-group input-group-sm"><span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" placeholder="Cerca per nome o codice fiscale" value="${esc(f.q)}" oninput="App.iscFiltro('q', this.value)"></div></div>
+      <div class="col-6 col-md-3"><select class="form-select form-select-sm" onchange="App.iscFiltro('stato', this.value)">
+        ${[['attivi','Attivi'],['chiusi','Chiusi'],['tutti','Tutti']].map(([v, l]) => `<option value="${v}" ${f.stato === v ? 'selected' : ''}>Stato: ${l}</option>`).join('')}</select></div>
+    </div>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+      <thead class="table-light"><tr><th>Nominativo</th><th>Età</th><th>Sede</th><th>Percorso</th><th>Pagatore</th><th>Quota</th><th>Stato</th><th class="text-end">Residuo</th></tr></thead>
+      <tbody id="iscBody">${iscrittiTable()}</tbody></table></div>
+    <div class="small text-body-secondary mt-2"><i class="bi bi-shield-lock"></i> In questo elenco non compaiono informazioni sanitarie.</div>
+  </div></div>`;
+};
+
+/* ============================ SCHEDA ISCRITTO ============================ */
+ROUTES.iscritto = (id) => {
+  const s = isc(id);
+  if (!s || !allowedSedi().includes(iscrizioneCorrente(s.id).sedeId))
+    return `<div class="alert alert-warning">Iscritto non trovato o non appartenente alle tue sedi.</div><a href="#/iscritti">Torna all'elenco</a>`;
+  if (S.lastScheda !== s.id) { audit('Lettura', 'Scheda iscritto: ' + nomeIsc(s), iscrizioneCorrente(s.id).sedeId); S.lastScheda = s.id; }
+  const i = iscrizioneCorrente(s.id), p = pagatore(s.id), res = residuoIscritto(s.id);
+  const tab = (k, lab, act) => `<li class="nav-item"><button class="nav-link ${act ? 'active' : ''}" data-bs-toggle="tab" data-bs-target="#t-${k}" type="button">${lab}</button></li>`;
+  const legs = DB.legami.filter(l => l.iscrittoId === s.id);
+  const ql = quote().filter(q => q.iscrittoId === s.id).sort((a, b) => b.dal.localeCompare(a.dal));
+  const docs = DB.documenti.filter(d => d.iscrittoId === s.id && !d.eliminato);
+  const tar = tariffaPer(i.sedeId, i.percorsoId, TODAY);
+  const mesiPres = [...new Set(DB.presenze.filter(x => x.iscrittoId === s.id).map(x => x.data.slice(0, 7)))].sort().reverse();
+  S.after = () => App.schedaPresenze(s.id, mesiPres[0] || TODAY.slice(0, 7));
+  return `
+  <a href="#/iscritti" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Iscritti</a>
+  <div class="card my-3"><div class="card-body d-flex flex-wrap align-items-center gap-3">
+    <div class="avatar">${esc(s.nome[0] + s.cognome[0])}</div>
+    <div class="flex-grow-1">
+      <h1 class="h4 mb-1">${esc(s.nome)} ${esc(s.cognome)}</h1>
+      <div class="small text-body-secondary">${eta(s.nascita)} anni${isMinore(s) ? ', minorenne' : ', maggiorenne'} | Sede ${esc(sede(i.sedeId).nome)} | Percorso ${esc(perc(i.percorsoId).nome)} | Quota ${s.frequenza.toLowerCase()}</div>
+      <div class="mt-1">${isAttivo(s) ? '<span class="badge text-bg-success">Attivo</span>' : '<span class="badge text-bg-secondary">Chiuso</span>'}
+        ${p.manca ? '<span class="badge text-bg-danger ms-1">Manca genitore pagatore</span>' : ''}</div>
+    </div>
+    <div class="text-end"><div class="small text-body-secondary">Residuo da pagare</div><div class="h4 mb-0 ${res > 0 ? 'text-danger' : 'text-success'}">${eur(res)}</div></div>
+  </div></div>
+  <ul class="nav nav-tabs flex-nowrap overflow-auto" role="tablist">
+    ${tab('dati', 'Dati', true)}${tab('gen', `Genitori <span class="badge text-bg-light border">${legs.length}</span>`)}${tab('iscr', 'Iscrizione')}
+    ${tab('pres', 'Presenze')}${tab('quote', `Quote <span class="badge text-bg-light border">${ql.length}</span>`)}${tab('docs', `Documenti <span class="badge text-bg-light border">${docs.length}</span>`)}
+  </ul>
+  <div class="card border-top-0 rounded-top-0"><div class="card-body tab-content">
+    <div class="tab-pane fade show active" id="t-dati">
+      <form class="row g-3" onsubmit="event.preventDefault(); App.salvaDati(${s.id})">
+        <div class="col-md-6"><label class="form-label small">Nome</label><input class="form-control" id="f_nome" value="${esc(s.nome)}" required></div>
+        <div class="col-md-6"><label class="form-label small">Cognome</label><input class="form-control" id="f_cognome" value="${esc(s.cognome)}" required></div>
+        <div class="col-md-4"><label class="form-label small">Data di nascita</label><input type="date" class="form-control" id="f_nascita" value="${s.nascita}" required></div>
+        <div class="col-md-4"><label class="form-label small">Codice fiscale</label><input class="form-control text-uppercase" id="f_cf" value="${esc(s.cf)}" maxlength="16"></div>
+        <div class="col-md-4"><label class="form-label small">Indirizzo</label><input class="form-control" id="f_ind" value="${esc(s.indirizzo)}"></div>
+        <div class="col-md-6"><label class="form-label small">Email ${isMinore(s) ? '(facoltativa, per i minori si usa il genitore)' : ''}</label><input type="email" class="form-control" id="f_email" value="${esc(s.email)}"></div>
+        <div class="col-md-6"><label class="form-label small">Telefono</label><input class="form-control" id="f_tel" value="${esc(s.telefono)}"></div>
+        <div class="col-12"><label class="form-label small">Note amministrative (non inserire informazioni sanitarie)</label><textarea class="form-control" id="f_note" rows="2">${esc(s.note)}</textarea></div>
+        <div class="col-12 d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <div class="alert alert-info small py-2 mb-0"><i class="bi bi-shield-lock"></i> Le informazioni sanitarie non stanno in questa scheda: solo nei documenti cifrati.</div>
+          <button class="btn btn-brand"><i class="bi bi-check2"></i> Salva</button></div>
+        <div class="col-12 d-none" id="formErr"></div>
+      </form>
+    </div>
+    <div class="tab-pane fade" id="t-gen">
+      ${!legs.length ? `<div class="alert ${isMinore(s) ? 'alert-danger' : 'alert-secondary'} small">${isMinore(s) ? 'Iscritto minorenne senza genitore o tutore: aggiungine uno e indicalo come pagatore.' : 'Iscritto maggiorenne: le quote sono intestate direttamente a lui.'}</div>` : ''}
+      <div class="row g-3">${legs.map(l => { const g = gen(l.genitoreId); const figli = DB.legami.filter(x => x.genitoreId === g.id && x.iscrittoId !== s.id).map(x => isc(x.iscrittoId));
+        return `<div class="col-md-6"><div class="card h-100"><div class="card-body">
+          <div class="d-flex justify-content-between"><div><div class="fw-semibold">${esc(g.nome)} ${esc(g.cognome)}</div><div class="small text-body-secondary">${esc(l.parentela)}</div></div>
+          ${l.pagatore ? '<span class="badge text-bg-primary align-self-start">Pagatore</span>' : ''}</div>
+          <div class="small mt-2"><i class="bi bi-envelope"></i> ${esc(g.email) || '<span class="text-body-secondary">nessuna email</span>'}<br><i class="bi bi-telephone"></i> ${esc(g.telefono) || '<span class="text-body-secondary">nessun telefono</span>'}</div>
+          ${figli.length ? `<div class="small text-body-secondary mt-2">Segue anche: ${figli.map(f => `<a href="#/iscritto/${f.id}">${esc(f.nome)}</a>`).join(', ')}</div>` : ''}
+          <div class="mt-3 d-flex gap-2">${!l.pagatore ? `<button class="btn btn-sm btn-outline-primary" onclick="App.setPagatore(${s.id},${g.id})">Imposta come pagatore</button>` : ''}
+          <button class="btn btn-sm btn-outline-danger" onclick="App.rimuoviGenitore(${s.id},${g.id})"><i class="bi bi-x-lg"></i> Rimuovi</button></div>
+        </div></div></div>`; }).join('')}</div>
+      <button class="btn btn-outline-primary btn-sm mt-3" onclick="App.aggiungiGenitore(${s.id})"><i class="bi bi-plus-lg"></i> Aggiungi genitore / tutore</button>
+    </div>
+    <div class="tab-pane fade" id="t-iscr">
+      <div class="row g-3">
+        <div class="col-md-6"><div class="card h-100"><div class="card-body small">
+          <h2 class="h6 text-brand fw-bold">Iscrizione attuale</h2>
+          <div>Sede: <b>${esc(sede(i.sedeId).nome)}</b></div><div>Percorso: <b>${esc(perc(i.percorsoId).nome)}</b></div>
+          <div>Dal: <b>${D.it(i.dal)}</b> ${i.al ? `al <b>${D.it(i.al)}</b>` : '(in corso)'}</div>
+          <div>Tariffa in vigore oggi: <b>${eur(tar.prezzo)} / ora</b></div>
+          <div>Frequenza prevista: <b>${s.giorni.map(g => GG[g]).join(', ')}</b>, ${fnum(s.ore)} ore</div>
+          <div>Tipo quota: <b>${s.frequenza}</b></div>
+          ${isAttivo(s) ? `<div class="mt-3 d-flex flex-wrap gap-2"><button class="btn btn-sm btn-outline-primary" onclick="App.trasferisci(${s.id})"><i class="bi bi-arrow-left-right"></i> Trasferisci sede / percorso</button>
+            <button class="btn btn-sm btn-outline-danger" onclick="App.chiudiIscrizione(${s.id})"><i class="bi bi-door-closed"></i> Chiudi iscrizione</button></div>` : ''}
+        </div></div></div>
+        <div class="col-md-6"><div class="card h-100"><div class="card-body">
+          <h2 class="h6 text-brand fw-bold">Storico iscrizioni</h2>
+          <table class="table table-sm small mb-0"><thead><tr><th>Sede</th><th>Percorso</th><th>Dal</th><th>Al</th></tr></thead>
+          <tbody>${iscrizioniDi(s.id).slice().reverse().map(x => `<tr><td>${esc(sede(x.sedeId).nome)}</td><td>${esc(perc(x.percorsoId).nome)}</td><td>${D.it(x.dal)}</td><td>${x.al ? D.it(x.al) + (x.motivo ? `<div class="text-body-secondary">${esc(x.motivo)}</div>` : '') : 'in corso'}</td></tr>`).join('')}</tbody></table>
+        </div></div></div>
+      </div>
+    </div>
+    <div class="tab-pane fade" id="t-pres">
+      <div class="d-flex align-items-center gap-2 mb-2"><label class="small">Mese</label>
+        <select class="form-select form-select-sm w-auto" onchange="App.schedaPresenze(${s.id}, this.value)">${mesiPres.map(m => `<option value="${m}">${D.mese(m)}</option>`).join('')}</select></div>
+      <div id="schedaPres"></div>
+    </div>
+    <div class="tab-pane fade" id="t-quote">${quoteTable(ql, true)}</div>
+    <div class="tab-pane fade" id="t-docs">
+      <div class="d-flex justify-content-end mb-2"><button class="btn btn-brand btn-sm" onclick="App.upload(${s.id})"><i class="bi bi-cloud-arrow-up"></i> Carica documento</button></div>
+      ${docsTable(docs, true)}
+    </div>
+  </div></div>`;
+};
+
+/* ============================ PRESENZE ============================ */
+function lockReason(stId, d) {
+  const q = quote().find(x => x.iscrittoId === stId && x.dal <= d && x.al >= d);
+  if (!q) return '';
+  if (q.fattura) return `Quota già fatturata (${q.fattura}): presenze bloccate`;
+  if (q.pagato > 0) return 'Quota con pagamenti registrati: presenze bloccate';
+  return '';
+}
+ROUTES.presenze = () => {
+  const sedi = scopeSedi();
+  if (!S.presSede || !sedi.includes(S.presSede)) S.presSede = sedi[0];
+  const sd = S.presSede, ws = S.presWeek, we = D.add(ws, 6);
+  const days = [0,1,2,3,4].map(n => D.add(ws, n));
+  const rows = DB.iscrizioni.filter(i => i.sedeId === sd && i.dal <= we && (!i.al || i.al >= ws))
+    .map(i => ({ i, s:isc(i.iscrittoId) })).sort((a, b) => nomeIsc(a.s).localeCompare(nomeIsc(b.s)));
+  let locked = 0;
+  const body = rows.map(({ i, s }) => {
+    const cells = days.map(d => {
+      if (closed(d)) return `<td class="text-center text-body-tertiary small">Chiuso</td>`;
+      if (d < i.dal || (i.al && d > i.al)) return `<td class="text-center text-body-tertiary">-</td>`;
+      const p = DB.presenze.find(x => x.iscrittoId === s.id && x.data === d);
+      const prezzo = p ? p.prezzo : tariffaPer(sd, i.percorsoId, d).prezzo;
+      const lock = lockReason(s.id, d), fut = d > TODAY;
+      if (lock) locked++;
+      return `<td class="text-center"><div class="d-flex align-items-center justify-content-center gap-1">
+        <input type="number" class="form-control form-control-sm pres-input" min="0" max="8" step="0.5" value="${p ? p.ore : ''}" placeholder="0"
+          data-s="${s.id}" data-i="${i.id}" data-d="${d}" data-prezzo="${prezzo}" data-orig="${p ? p.ore : 0}" data-plan="${s.giorni.includes(D.dow(d)) ? s.ore : 0}"
+          ${lock || fut ? 'disabled' : ''} title="${esc(lock || (fut ? 'Giorno futuro' : `Tariffa ${eur(prezzo)}/ora`))}" oninput="App.presCalc()" aria-label="Ore ${esc(nomeIsc(s))} ${D.it(d)}">
+        ${lock ? '<i class="bi bi-lock-fill text-body-tertiary small"></i>' : ''}</div></td>`;
+    }).join('');
+    return `<tr data-row><td><a href="#/iscritto/${s.id}" class="text-decoration-none fw-semibold">${esc(nomeIsc(s))}</a><div class="small text-body-secondary">${esc(perc(i.percorsoId).nome)}</div></td>${cells}
+      <td class="text-end" data-ore></td><td class="text-end fw-semibold" data-imp></td></tr>`;
+  }).join('');
+  S.after = () => App.presCalc();
+  const tg = tariffaPer(sd, 1, TODAY).prezzo, ti = tariffaPer(sd, 2, TODAY).prezzo;
+  return header('Presenze', `<button class="btn btn-outline-secondary btn-sm" onclick="App.presPrevisto()"><i class="bi bi-magic"></i> Compila come previsto</button>
+      <button class="btn btn-brand btn-sm" onclick="App.presSalva()"><i class="bi bi-check2"></i> Salva presenze</button>`) + `
+  <div class="card"><div class="card-body">
+    <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+      <div class="btn-group btn-group-sm">
+        <button class="btn btn-outline-primary" onclick="App.presWeek(-7)" aria-label="Settimana precedente"><i class="bi bi-chevron-left"></i></button>
+        <button class="btn btn-outline-primary" onclick="App.presWeek(0)">Oggi</button>
+        <button class="btn btn-outline-primary" onclick="App.presWeek(7)" aria-label="Settimana successiva"><i class="bi bi-chevron-right"></i></button>
+      </div>
+      <span class="fw-semibold">Settimana ${D.it(ws)} - ${D.it(D.add(ws, 4))}</span>
+      <select class="form-select form-select-sm w-auto ms-md-auto" onchange="App.presSede(this.value)" ${S.sede ? 'disabled' : ''}>
+        ${sedi.map(id => `<option value="${id}" ${id === sd ? 'selected' : ''}>Sede: ${esc(sede(id).nome)}</option>`).join('')}</select>
+    </div>
+    ${rows.length ? `<div class="table-responsive"><table class="table align-middle mb-0">
+      <thead class="table-light"><tr><th>Iscritto</th>${days.map(d => `<th class="text-center ${d === TODAY ? 'text-primary' : ''}">${GG[D.dow(d)]} ${d.slice(8)}</th>`).join('')}<th class="text-end">Ore</th><th class="text-end">Importo</th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr class="table-light fw-bold"><td>Totale</td><td colspan="5"></td><td class="text-end" id="totOre"></td><td class="text-end" id="totImp"></td></tr></tfoot>
+    </table></div>` : '<p class="text-body-secondary">Nessun iscritto in questa sede per la settimana selezionata.</p>'}
+    <div class="small text-body-secondary mt-3">
+      Tariffe in vigore oggi a ${esc(sede(sd).nome)}: Base ${eur(tg)}/ora, Intensivo ${eur(ti)}/ora.
+      Ogni presenza salva il prezzo applicato: se la tariffa cambia, i totali passati restano invariati.
+      ${locked ? `<br><i class="bi bi-lock-fill"></i> Le celle con il lucchetto appartengono a quote già pagate o fatturate e non sono modificabili.` : ''}
+    </div>
+  </div></div>`;
+};
+
+/* ============================ QUOTE ============================ */
+function quoteTable(list, compact = false) {
+  if (!list.length) return '<p class="text-body-secondary mb-0">Nessuna quota.</p>';
+  return `<div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead class="table-light"><tr>${compact ? '' : '<th>Iscritto / pagatore</th>'}<th>Tipo</th><th>Periodo</th><th class="text-end">Totale</th><th class="text-end">Pagato</th><th class="text-end">Residuo</th><th>Scadenza</th><th>Stato</th><th>Fattura</th><th class="text-end">Azioni</th></tr></thead>
+    <tbody>${list.map(q => { const s = isc(q.iscrittoId); return `<tr>
+      ${compact ? '' : `<td><a href="#/iscritto/${s.id}" class="fw-semibold text-decoration-none">${esc(nomeIsc(s))}</a><div class="small text-body-secondary">${esc(q.pagatore.nome)}</div></td>`}
+      <td class="small">${q.tipo}</td><td>${periodo(q)}</td><td class="text-end">${eur(q.totale)}</td><td class="text-end">${eur(q.pagato)}</td>
+      <td class="text-end fw-semibold">${eur(q.residuo)}</td><td>${D.it(q.scadenza)}</td><td>${badge(q.stato)}</td>
+      <td class="small">${q.fattura ? `<i class="bi bi-receipt"></i> ${esc(q.fattura)}` : '<span class="text-body-tertiary">-</span>'}</td>
+      <td class="text-end text-nowrap">${quoteActions(q)}</td></tr>`; }).join('')}</tbody></table></div>`;
+}
+function quoteActions(q) {
+  const b = [];
+  if (q.residuo > 0.004) b.push(`<button class="btn btn-sm btn-outline-primary" title="Registra pagamento" onclick="App.pagamento('${q.key}')"><i class="bi bi-cash"></i></button>`);
+  if (q.residuo > 0.004 && q.stato !== 'In corso') b.push(`<button class="btn btn-sm btn-outline-warning" title="Invia sollecito" onclick="App.sollecito('${q.key}')"><i class="bi bi-send"></i></button>`);
+  b.push(`<button class="btn btn-sm btn-outline-secondary" title="Dettaglio" onclick="App.dettaglioQuota('${q.key}')"><i class="bi bi-eye"></i></button>`);
+  return `<div class="btn-group">${b.join('')}</div>`;
+}
+ROUTES.quote = () => {
+  const f = S.quoteFiltro, txt = f.q.trim().toLowerCase();
+  const ids = new Set(DB.iscritti.filter(inScope).map(s => s.id));
+  const all = quote().filter(q => ids.has(q.iscrittoId));
+  let list = all;
+  const count = st => all.filter(q => st === 'aperte' ? APERTE.includes(q.stato) : st === 'tutte' || q.stato === st).length;
+  const pills = [['aperte','Aperte'],['Scaduta','Scadute'],['In corso','In corso'],['Pagata','Pagate'],['tutte','Tutte']];
+  list = list.filter(q => f.stato === 'tutte' || (f.stato === 'aperte' ? APERTE.includes(q.stato) : q.stato === f.stato))
+    .filter(q => !f.tipo || q.tipo === f.tipo)
+    .filter(q => !txt || `${nomeIsc(isc(q.iscrittoId))} ${q.pagatore.nome}`.toLowerCase().includes(txt));
+  list.sort((a, b) => f.stato === 'Pagata' || f.stato === 'tutte' ? b.dal.localeCompare(a.dal) : a.scadenza.localeCompare(b.scadenza));
+  const PS = 20, pages = Math.max(1, Math.ceil(list.length / PS));
+  if (f.page > pages) f.page = pages;
+  const pageList = list.slice((f.page - 1) * PS, f.page * PS);
+  const notif = DB.notifiche.filter(n => ids.has(+n.key.split('|')[0])).slice().reverse();
+  return header('Quote e pagamenti', `<button class="btn btn-outline-secondary btn-sm" onclick="location.hash='#/report'"><i class="bi bi-printer"></i> Stampa elenco</button>`, esc(scopeLabel())) + `
+  <div class="card mb-3"><div class="card-body">
+    <div class="d-flex flex-wrap gap-2 mb-3 filter-pills">
+      ${pills.map(([v, l]) => `<button class="btn btn-sm ${f.stato === v ? 'btn-primary' : 'btn-outline-secondary'}" onclick="App.quoteFiltro('stato','${v}')">${l} <span class="badge ${f.stato === v ? 'text-bg-light' : 'text-bg-secondary'}">${count(v)}</span></button>`).join('')}
+    </div>
+    <div class="row g-2 mb-3">
+      <div class="col-md-6"><div class="input-group input-group-sm"><span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" placeholder="Cerca iscritto o pagatore" value="${esc(f.q)}" onchange="App.quoteFiltro('q', this.value)" onkeyup="if(event.key==='Enter')this.blur()"></div></div>
+      <div class="col-6 col-md-3"><select class="form-select form-select-sm" onchange="App.quoteFiltro('tipo', this.value)">
+        ${[['','Tutti i tipi'],['Mensile','Mensili'],['Settimanale','Settimanali']].map(([v, l]) => `<option value="${v}" ${f.tipo === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div class="col-6 col-md-3 text-md-end small align-self-center">${list.length} quote, residuo <b>${eur(list.reduce((s, q) => s + q.residuo, 0))}</b></div>
+    </div>
+    ${quoteTable(pageList)}
+    ${pages > 1 ? `<nav class="mt-3"><ul class="pagination pagination-sm justify-content-end mb-0">
+      ${Array.from({ length:pages }, (_, n) => `<li class="page-item ${n + 1 === f.page ? 'active' : ''}"><button class="page-link" onclick="App.quoteFiltro('page', ${n + 1})">${n + 1}</button></li>`).join('')}</ul></nav>` : ''}
+  </div></div>
+  <div class="card"><div class="card-body">
+    <h2 class="h6 text-brand fw-bold">Solleciti inviati</h2>
+    ${notif.length ? `<div class="table-responsive"><table class="table table-sm small mb-0"><thead><tr><th>Data</th><th>Canale</th><th>Destinatario</th><th>Quota</th><th class="text-end">Importo</th><th>Inviato da</th><th>Esito</th></tr></thead>
+      <tbody>${notif.map(n => { const q = quotaByKey(n.key); return `<tr><td>${D.it(n.ts)} ${n.ts.slice(11, 16)}</td><td>${n.canale}</td><td>${esc(n.dest)}</td><td>${q ? esc(nomeIsc(isc(q.iscrittoId))) + ' - ' + periodo(q) : esc(n.key)}</td><td class="text-end">${eur(n.importo)}</td><td>${esc(n.by)}</td><td><span class="badge text-bg-success">${esc(n.esito)}</span></td></tr>`; }).join('')}</tbody></table></div>`
+      : '<p class="small text-body-secondary mb-0">Nessun sollecito inviato.</p>'}
+  </div></div>`;
+};
+
+/* ============================ DOCUMENTI ============================ */
+const CATEGORIE = ['Consenso','Certificato','Relazione','Identita','Altro'];
+function docsTable(docs, compact = false) {
+  if (!docs.length) return '<p class="text-body-secondary mb-0">Nessun documento.</p>';
+  return `<div class="table-responsive"><table class="table table-sm align-middle mb-0">
+    <thead class="table-light"><tr>${compact ? '' : '<th>Iscritto</th>'}<th>Nome file</th><th>Categoria</th><th>Dimensione</th><th>Caricato da</th><th>Data</th><th>Stato</th><th class="text-end">Azioni</th></tr></thead>
+    <tbody>${docs.map(d => { const s = isc(d.iscrittoId); return `<tr>
+      ${compact ? '' : `<td><a href="#/iscritto/${s.id}" class="text-decoration-none fw-semibold">${esc(nomeIsc(s))}</a></td>`}
+      <td><i class="bi bi-file-earmark${d.type && d.type.startsWith('image') ? '-image' : '-pdf'} text-danger"></i> ${esc(d.nome)}${d.demo ? '' : ' <span class="badge text-bg-info">nuovo</span>'}</td>
+      <td>${esc(d.categoria)}</td><td class="small">${fsize(d.size)}</td><td class="small">${esc(d.by)}</td><td class="small">${D.it(d.data)}</td>
+      <td><span class="badge text-bg-success"><i class="bi bi-lock-fill"></i> Cifrato</span></td>
+      <td class="text-end text-nowrap"><div class="btn-group">
+        <button class="btn btn-sm btn-outline-primary" title="Apri" onclick="App.apriDoc(${d.id})"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-sm btn-outline-primary" title="Scarica" onclick="App.scaricaDoc(${d.id})"><i class="bi bi-download"></i></button>
+        <button class="btn btn-sm btn-outline-secondary" title="Dettagli cifratura" onclick="App.techDoc(${d.id})"><i class="bi bi-key"></i></button>
+        ${isAdmin() ? `<button class="btn btn-sm btn-outline-danger" title="Elimina" onclick="App.eliminaDoc(${d.id})"><i class="bi bi-trash"></i></button>` : ''}
+      </div></td></tr>`; }).join('')}</tbody></table></div>`;
+}
+ROUTES.documenti = () => {
+  const f = S.docFiltro, q = f.q.trim().toLowerCase();
+  const ids = new Set(DB.iscritti.filter(inScope).map(s => s.id));
+  const docs = DB.documenti.filter(d => !d.eliminato && ids.has(d.iscrittoId))
+    .filter(d => !f.cat || d.categoria === f.cat)
+    .filter(d => !q || `${d.nome} ${nomeIsc(isc(d.iscrittoId))}`.toLowerCase().includes(q))
+    .sort((a, b) => b.data.localeCompare(a.data) || b.id - a.id);
+  return header('Documenti', `<button class="btn btn-brand btn-sm" onclick="App.upload()"><i class="bi bi-cloud-arrow-up"></i> Carica documento</button>`, esc(scopeLabel())) + `
+  <div class="alert alert-info small"><i class="bi bi-shield-lock"></i> I file vengono cifrati (AES-256-GCM, una chiave per file) prima del salvataggio. La chiave del file è protetta dalla chiave principale del Key Vault.
+    Ogni apertura e download viene registrato nel registro accessi. <b>Nella demo</b> la cifratura avviene davvero, ma nel browser; nel prodotto finale la fa il server .NET.</div>
+  <div class="card"><div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-md-6"><div class="input-group input-group-sm"><span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input class="form-control" placeholder="Cerca per file o iscritto" value="${esc(f.q)}" onchange="App.docFiltro('q', this.value)"></div></div>
+      <div class="col-6 col-md-3"><select class="form-select form-select-sm" onchange="App.docFiltro('cat', this.value)">
+        <option value="">Tutte le categorie</option>${CATEGORIE.map(c => `<option ${f.cat === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+    </div>
+    ${docsTable(docs)}
+  </div></div>`;
+};
+
+/* ============================ CALENDARIO ============================ */
+ROUTES.calendario = () => {
+  const { y, m } = S.cal;
+  const first = `${y}-${pad(m)}-01`, last = D.monthEnd(y, m);
+  const start = D.weekStart(first), end = D.add(D.weekStart(last), 6);
+  const ids = new Set(DB.iscritti.filter(inScope).map(s => s.id));
+  const qs = quote().filter(q => ids.has(q.iscrittoId));
+  const byDay = {};
+  qs.forEach(q => { (byDay[q.scadenza] = byDay[q.scadenza] || []).push(q); });
+  let cells = '';
+  for (let d = start; d <= end; d = D.add(d, 1)) {
+    const ev = byDay[d] || [], out = d.slice(0, 7) !== `${y}-${pad(m)}`;
+    const grp = {};
+    ev.forEach(q => { grp[q.stato] = (grp[q.stato] || 0) + 1; });
+    const res = ev.reduce((s, q) => s + q.residuo, 0);
+    cells += `<div class="cal-day ${out ? 'out' : ''} ${d === TODAY ? 'today' : ''} ${ev.length ? 'has' : ''}" ${ev.length ? `onclick="App.calGiorno('${d}')" role="button" tabindex="0"` : ''}>
+      <span class="num">${+d.slice(8)}</span>
+      ${Object.entries(grp).map(([st, n]) => `<span class="badge text-bg-${STATO_CLS[st]}" title="${n} ${st.toLowerCase()}">${n}<span class="d-none d-md-inline"> ${n > 1 ? PLURALE[st] : st.toLowerCase()}</span></span>`).join('')}
+      ${res > 0 ? `<div class="small text-body-secondary mt-1 d-none d-sm-block">${eur(res)}</div>` : ''}</div>`;
+  }
+  const mq = qs.filter(q => q.scadenza.startsWith(`${y}-${pad(m)}`));
+  const sum = st => mq.filter(q => q.stato === st);
+  return header(`Calendario scadenze`, `<div class="btn-group btn-group-sm">
+      <button class="btn btn-outline-primary" onclick="App.calMove(-1)" aria-label="Mese precedente"><i class="bi bi-chevron-left"></i></button>
+      <button class="btn btn-outline-primary" onclick="App.calMove(0)">Oggi</button>
+      <button class="btn btn-outline-primary" onclick="App.calMove(1)" aria-label="Mese successivo"><i class="bi bi-chevron-right"></i></button></div>`, `${cap(MESI[m - 1])} ${y} - ${esc(scopeLabel())}`) + `
+  <div class="row g-3">
+    <div class="col-xl-9"><div class="card"><div class="card-body">
+      <div class="cal-grid mb-1">${GG.map(g => `<div class="cal-head">${g}</div>`).join('')}</div>
+      <div class="cal-grid">${cells}</div>
+      <div class="d-flex flex-wrap gap-2 mt-3 small align-items-center">${Object.keys(STATO_CLS).map(s => badge(s)).join('')}<span class="text-body-secondary">Clic su un giorno per vedere le quote e inviare i solleciti.</span></div>
+    </div></div></div>
+    <div class="col-xl-3"><div class="card"><div class="card-body">
+      <h2 class="h6 text-brand fw-bold">Scadenze del mese</h2>
+      ${['Scaduta','Da pagare','Parziale','In corso','Pagata'].map(st => { const l = sum(st); return `<div class="d-flex justify-content-between align-items-center py-2 border-bottom small">
+        <span>${badge(st)} <span class="ms-1">${l.length}</span></span><b>${eur(l.reduce((s, q) => s + (st === 'Pagata' ? q.totale : q.residuo), 0))}</b></div>`; }).join('')}
+      <div class="small text-body-secondary mt-2">Le quote mensili scadono il 10 del mese successivo; le settimanali la domenica della settimana dopo.</div>
+    </div></div></div>
+  </div>`;
+};
+
+/* ============================ REPORT ============================ */
+function mesiDisponibili() { const out = []; for (let d = '2026-03-01'; d <= TODAY; ) { out.push(d.slice(0, 7)); const [y, m] = d.split('-').map(Number); d = m === 12 ? `${y + 1}-01-01` : `${y}-${pad(m + 1)}-01`; } return out.reverse(); }
+function reportData() {
+  const r = S.rep, sedi = r.sede ? [r.sede] : scopeSedi();
+  const sts = DB.iscritti.filter(s => sedi.includes(iscrizioneCorrente(s.id).sedeId));
+  const ids = new Set(sts.map(s => s.id));
+  if (r.tipo === 'quote') {
+    let qs = quote().filter(q => ids.has(q.iscrittoId) && q.dal.startsWith(r.mese));
+    if (r.stato === 'aperte') qs = qs.filter(q => APERTE.includes(q.stato) || q.stato === 'In corso');
+    else if (r.stato) qs = qs.filter(q => q.stato === r.stato);
+    qs.sort((a, b) => nomeIsc(isc(a.iscrittoId)).localeCompare(nomeIsc(isc(b.iscrittoId))) || a.dal.localeCompare(b.dal));
+    const head = ['Iscritto','Pagatore','Periodo','Ore','Totale','Pagato','Residuo','Stato','Fattura'];
+    const rows = qs.map(q => [nomeIsc(isc(q.iscrittoId)), q.pagatore.nome, periodo(q), fnum(q.ore), eur(q.totale), eur(q.pagato), eur(q.residuo), q.stato, q.fattura || '']);
+    const tot = ['Totale', '', `${qs.length} quote`, fnum(qs.reduce((s, q) => s + q.ore, 0)), eur(qs.reduce((s, q) => s + q.totale, 0)), eur(qs.reduce((s, q) => s + q.pagato, 0)), eur(qs.reduce((s, q) => s + q.residuo, 0)), '', ''];
+    return { title:'Elenco quote', head, rows, tot, right:[3,4,5,6] };
+  }
+  if (r.tipo === 'sede') {
+    const rows = sedi.map(id => {
+      const pr = DB.presenze.filter(p => p.sedeId === id && p.data.startsWith(r.mese));
+      const sIds = new Set(DB.iscritti.filter(s => iscrizioneCorrente(s.id).sedeId === id).map(s => s.id));
+      const att = DB.iscritti.filter(s => sIds.has(s.id) && isAttivo(s)).length;
+      const inc = DB.pagamenti.filter(p => sIds.has(p.iscrittoId) && p.data.startsWith(r.mese)).reduce((s, p) => s + p.importo, 0);
+      const resid = quote().filter(q => sIds.has(q.iscrittoId) && APERTE.includes(q.stato)).reduce((s, q) => s + q.residuo, 0);
+      return { n:sede(id).nome, att, ore:pr.reduce((s, p) => s + p.ore, 0), mat:pr.reduce((s, p) => s + p.ore * p.prezzo, 0), inc, resid };
+    });
+    const sum = k => rows.reduce((s, x) => s + x[k], 0);
+    return { title:'Riepilogo per sede', head:['Sede','Iscritti attivi','Ore erogate','Maturato nel mese','Incassato nel mese','Residuo aperto (oggi)'],
+      rows:rows.map(x => [x.n, x.att, fnum(x.ore), eur(x.mat), eur(x.inc), eur(x.resid)]),
+      tot:['Totale', sum('att'), fnum(sum('ore')), eur(sum('mat')), eur(sum('inc')), eur(sum('resid'))], right:[1,2,3,4,5] };
+  }
+  const pr = DB.presenze.filter(p => ids.has(p.iscrittoId) && sedi.includes(p.sedeId) && p.data.startsWith(r.mese))
+    .sort((a, b) => nomeIsc(isc(a.iscrittoId)).localeCompare(nomeIsc(isc(b.iscrittoId))) || a.data.localeCompare(b.data));
+  return { title:'Dettaglio presenze', head:['Iscritto','Data','Sede','Ore','Prezzo orario','Importo'],
+    rows:pr.map(p => [nomeIsc(isc(p.iscrittoId)), `${GG[D.dow(p.data)]} ${D.it(p.data)}`, sede(p.sedeId).nome, fnum(p.ore), eur(p.prezzo), eur(p.ore * p.prezzo)]),
+    tot:['Totale', `${pr.length} presenze`, '', fnum(pr.reduce((s, p) => s + p.ore, 0)), '', eur(pr.reduce((s, p) => s + p.ore * p.prezzo, 0))], right:[3,4,5] };
+}
+ROUTES.report = () => {
+  const r = S.rep, sedi = scopeSedi();
+  if (r.sede && !sedi.includes(r.sede)) r.sede = 0;
+  const data = reportData();
+  const sel = (k, opts) => `<select class="form-select form-select-sm" onchange="App.rep('${k}', this.value)">${opts.map(([v, l]) => `<option value="${v}" ${String(r[k]) === String(v) ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+  return header('Report e stampe') + `
+  <div class="row g-3">
+    <div class="col-lg-3"><div class="card"><div class="card-body">
+      <h2 class="h6 text-brand fw-bold">Opzioni</h2>
+      <label class="form-label small mt-2">Tipo di report</label>${sel('tipo', [['quote','Elenco quote'],['sede','Riepilogo per sede'],['presenze','Dettaglio presenze']])}
+      <label class="form-label small mt-2">Mese</label>${sel('mese', mesiDisponibili().map(m => [m, D.mese(m)]))}
+      <label class="form-label small mt-2">Sede</label>${sel('sede', [[0, sedi.length > 1 ? 'Tutte le sedi selezionate' : sede(sedi[0]).nome], ...(sedi.length > 1 ? sedi.map(id => [id, sede(id).nome]) : [])])}
+      ${r.tipo === 'quote' ? `<label class="form-label small mt-2">Stato</label>${sel('stato', [['','Tutti'],['aperte','Da incassare (aperte e in corso)'],['Scaduta','Scadute'],['Pagata','Pagate']])}` : ''}
+      <div class="d-grid gap-2 mt-3">
+        <button class="btn btn-brand btn-sm" onclick="App.stampa()"><i class="bi bi-printer"></i> Stampa / Salva PDF</button>
+        <button class="btn btn-outline-primary btn-sm" onclick="App.csv()"><i class="bi bi-filetype-csv"></i> Esporta per Excel (CSV)</button>
+      </div>
+    </div></div></div>
+    <div class="col-lg-9">
+      <div class="paper" id="print-area">
+        <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
+          <div><h2 class="h5 text-brand fw-bold mb-0">${data.title}</h2><div class="small text-body-secondary">${esc(r.sede ? sede(r.sede).nome : scopeLabel())} - ${D.mese(r.mese)}</div></div>
+          <div class="small text-body-secondary text-end">Stampato il ${D.it(TODAY)}<br>da ${esc(userName())}</div>
+        </div>
+        ${data.rows.length ? `<div class="table-responsive"><table class="table table-sm table-bordered small mb-0">
+          <thead class="table-light"><tr>${data.head.map((h, i) => `<th class="${data.right.includes(i) ? 'text-end' : ''}">${h}</th>`).join('')}</tr></thead>
+          <tbody>${data.rows.map(row => `<tr>${row.map((c, i) => `<td class="${data.right.includes(i) ? 'text-end' : ''}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody>
+          <tfoot><tr class="table-light fw-bold">${data.tot.map((c, i) => `<td class="${data.right.includes(i) ? 'text-end' : ''}">${esc(c)}</td>`).join('')}</tr></tfoot>
+        </table></div>` : '<p class="text-body-secondary">Nessun dato per i filtri scelti.</p>'}
+      </div>
+    </div>
+  </div>`;
+};
+
+/* ============================ AMMINISTRAZIONE ============================ */
+ROUTES.admin = () => {
+  const t = S.adminTab;
+  const tabs = [['utenti','Utenti'],['sedi','Sedi'],['tariffe','Tariffe'],['audit','Registro accessi']];
+  let body = '';
+  if (t === 'utenti') {
+    body = `<div class="alert alert-secondary small"><i class="bi bi-microsoft"></i> Gli account si creano in <b>Microsoft Entra ID</b> (portale Azure). Qui l'amministratore li autorizza assegnando ruolo e sedi.
+      Un utente disattivato non vede dati anche se il login Microsoft riesce.</div>
+      <div class="d-flex justify-content-end mb-2"><button class="btn btn-brand btn-sm" onclick="App.utente()"><i class="bi bi-person-plus"></i> Nuovo utente</button></div>
+      <div class="table-responsive"><table class="table align-middle"><thead class="table-light"><tr><th>Nome</th><th>Email (Entra ID)</th><th>Ruolo</th><th>Sedi</th><th>Stato</th><th class="text-end">Azioni</th></tr></thead>
+      <tbody>${DB.utenti.map(u => `<tr><td class="fw-semibold">${esc(u.nome)} ${esc(u.cognome)}${u.id === S.user.id ? ' <span class="badge text-bg-light border">tu</span>' : ''}</td>
+        <td class="small">${esc(u.email)}<div class="text-body-tertiary" style="font-size:.7rem">Object ID ${esc(u.oid)}</div></td>
+        <td>${u.ruolo}</td><td class="small">${u.ruolo === 'Amministratore' ? 'Tutte' : u.sedi.map(id => esc(sede(id).nome)).join(', ')}</td>
+        <td>${u.attivo ? '<span class="badge text-bg-success">Attivo</span>' : '<span class="badge text-bg-secondary">Disattivato</span>'}</td>
+        <td class="text-end text-nowrap"><button class="btn btn-sm btn-outline-primary" onclick="App.utente(${u.id})"><i class="bi bi-pencil"></i></button>
+          ${u.id !== S.user.id ? `<button class="btn btn-sm ${u.attivo ? 'btn-outline-danger' : 'btn-outline-success'}" onclick="App.toggleUtente(${u.id})">${u.attivo ? 'Disattiva' : 'Attiva'}</button>` : ''}</td></tr>`).join('')}</tbody></table></div>`;
+  } else if (t === 'sedi') {
+    body = `<div class="d-flex justify-content-end mb-2"><button class="btn btn-brand btn-sm" onclick="App.nuovaSede()"><i class="bi bi-plus-lg"></i> Nuova sede</button></div>
+      <div class="table-responsive"><table class="table align-middle"><thead class="table-light"><tr><th>Sede</th><th>Indirizzo</th><th>Iscritti attivi</th><th>Utenti segreteria</th></tr></thead>
+      <tbody>${DB.sedi.map(s => `<tr><td class="fw-semibold">${esc(s.nome)}</td><td class="small">${esc(s.indirizzo)}</td>
+        <td>${DB.iscritti.filter(x => isAttivo(x) && iscrizioneCorrente(x.id).sedeId === s.id).length}</td>
+        <td class="small">${DB.utenti.filter(u => u.ruolo !== 'Amministratore' && u.attivo && u.sedi.includes(s.id)).map(u => esc(u.nome + ' ' + u.cognome)).join(', ') || '-'}</td></tr>`).join('')}</tbody></table></div>`;
+  } else if (t === 'tariffe') {
+    body = `<div class="alert alert-secondary small">Vale la tariffa più specifica: sede + percorso, poi sede, poi percorso, poi generale. Le presenze già registrate mantengono il prezzo con cui sono state salvate.</div>
+      <div class="d-flex justify-content-end mb-2"><button class="btn btn-brand btn-sm" onclick="App.nuovaTariffa()"><i class="bi bi-plus-lg"></i> Nuova tariffa</button></div>
+      <div class="table-responsive"><table class="table align-middle"><thead class="table-light"><tr><th>Sede</th><th>Percorso</th><th class="text-end">Prezzo orario</th><th>Valida dal</th><th>Valida al</th></tr></thead>
+      <tbody>${DB.tariffe.slice().sort((a, b) => b.dal.localeCompare(a.dal)).map(x => `<tr class="${x.al && x.al < TODAY ? 'text-body-tertiary' : ''}"><td>${x.sedeId ? esc(sede(x.sedeId).nome) : 'Tutte'}</td><td>${x.percorsoId ? esc(perc(x.percorsoId).nome) : 'Tutti'}</td>
+        <td class="text-end fw-semibold">${eur(x.prezzo)}</td><td>${D.it(x.dal)}</td><td>${x.al ? D.it(x.al) : '-'}</td></tr>`).join('')}</tbody></table></div>`;
+  } else {
+    const f = S.auditFiltro;
+    const users = [...new Set(DB.audit.map(a => a.user))], azioni = [...new Set(DB.audit.map(a => a.azione))];
+    const list = DB.audit.filter(a => (!f.user || a.user === f.user) && (!f.azione || a.azione === f.azione)).slice().sort((a, b) => b.ts.localeCompare(a.ts)).slice(0, 150);
+    body = `<div class="row g-2 mb-3">
+        <div class="col-6 col-md-3"><select class="form-select form-select-sm" onchange="App.auditFiltro('user', this.value)"><option value="">Tutti gli utenti</option>${users.map(u => `<option ${f.user === u ? 'selected' : ''}>${esc(u)}</option>`).join('')}</select></div>
+        <div class="col-6 col-md-3"><select class="form-select form-select-sm" onchange="App.auditFiltro('azione', this.value)"><option value="">Tutte le azioni</option>${azioni.map(a => `<option ${f.azione === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</select></div>
+      </div>
+      <div class="table-responsive"><table class="table table-sm small align-middle"><thead class="table-light"><tr><th>Data e ora</th><th>Utente</th><th>Azione</th><th>Oggetto</th><th>Sede</th></tr></thead>
+      <tbody>${list.map(a => `<tr><td class="text-nowrap">${D.it(a.ts)} ${a.ts.slice(11, 16)}</td><td>${esc(a.user)}</td><td><span class="badge text-bg-light border">${esc(a.azione)}</span></td><td>${esc(a.oggetto)}</td><td>${a.sedeId ? esc(sede(a.sedeId).nome) : '-'}</td></tr>`).join('')}</tbody></table></div>
+      <div class="small text-body-secondary">Nel prodotto finale il registro non è modificabile e non contiene contenuti sensibili.</div>`;
+  }
+  return header('Utenti e sedi', '', 'Sezione riservata all\'amministratore') + `
+  <ul class="nav nav-tabs">${tabs.map(([k, l]) => `<li class="nav-item"><button class="nav-link ${t === k ? 'active' : ''}" onclick="App.adminTab('${k}')">${l}</button></li>`).join('')}</ul>
+  <div class="card border-top-0 rounded-top-0"><div class="card-body">${body}</div></div>`;
+};
+
+/* ============================ AZIONI ============================ */
+const App = {
+  closeSide() { const el = $('#side'); const o = el && bootstrap.Offcanvas.getInstance(el); if (o) o.hide(); },
+
+  accountPicker() {
+    const accts = DB.utenti.map(u => `<div class="acct d-flex align-items-center gap-3 p-2 rounded border mb-2" onclick="App.login(${u.id})" role="button" tabindex="0">
+      <i class="bi bi-person-circle fs-3 text-secondary"></i><div class="flex-grow-1"><div class="fw-semibold">${esc(u.nome)} ${esc(u.cognome)}</div>
+      <div class="small text-body-secondary">${esc(u.email)}</div></div><span class="badge text-bg-light border">${u.ruolo}${u.attivo ? '' : ' - disattivato'}</span></div>`).join('');
+    openModal('<i class="bi bi-microsoft me-2"></i>Scegli un account', `<p class="small text-body-secondary">Simulazione del login Microsoft Entra ID. Scegli un account per provare i diversi ruoli.</p>${accts}
+      <div class="acct d-flex align-items-center gap-3 p-2 rounded border" onclick="App.login(0)" role="button" tabindex="0"><i class="bi bi-person-x fs-3 text-secondary"></i>
+      <div><div class="fw-semibold">Account non censito</div><div class="small text-body-secondary">utente.qualsiasi@gmail.com</div></div></div>
+      <div id="loginErr" class="alert alert-danger small mt-3 d-none"></div>`);
+  },
+  login(id) {
+    const u = DB.utenti.find(x => x.id === id), e = $('#loginErr');
+    if (!u) { e.innerHTML = '<b>Accesso negato.</b> L\'account non è presente nel tenant Entra ID della struttura. Non è prevista la registrazione autonoma.'; e.classList.remove('d-none'); return; }
+    if (!u.attivo) { e.innerHTML = '<b>Accesso negato.</b> Il login Microsoft è riuscito, ma l\'utente è disattivato nel gestionale.'; e.classList.remove('d-none'); return; }
+    S.user = u;
+    const al = allowedSedi();
+    S.sede = al.length > 1 ? 0 : al[0];
+    S.lastScheda = null;
+    audit('Login', 'Accesso con Entra ID');
+    closeModal();
+    renderShell();
+    if (location.hash === '#/dashboard' || !location.hash) renderMain(); else location.hash = '#/dashboard';
+    toast(`Benvenuto ${esc(u.nome)} (${u.ruolo})`, 'primary');
+  },
+  logout() { audit('Logout', 'Uscita'); S.user = null; location.hash = ''; renderLogin(); },
+  setSede(v) { S.sede = +v; S.quoteFiltro.page = 1; renderMain(); },
+  guida() {
+    openModal('Cosa provare nella demo', `<ol class="small mb-0">
+      <li class="mb-2"><b>Ruoli:</b> esci e rientra come <i>Anna Neri</i> (segreteria, solo Roma Nord): vedi solo i suoi iscritti e non la sezione Utenti. Prova anche l'account disattivato.</li>
+      <li class="mb-2"><b>Sedi:</b> cambia la sede in alto: dashboard, elenchi e report si filtrano.</li>
+      <li class="mb-2"><b>Presenze:</b> modifica le ore della settimana e salva. Le settimane già pagate o fatturate sono bloccate.</li>
+      <li class="mb-2"><b>Quote:</b> il totale nasce dalle presenze (ore x prezzo applicato). Registra un pagamento o invia un sollecito: il messaggio contiene solo importo e scadenza.</li>
+      <li class="mb-2"><b>Documenti:</b> carica un PDF o un'immagine: viene cifrato davvero (AES-256-GCM + chiave protetta). Aprilo per vederlo decifrato e guarda i dettagli di cifratura.</li>
+      <li class="mb-2"><b>Iscritti:</b> crea un nuovo iscritto minorenne: il genitore pagatore è obbligatorio. Marco e Tommaso Rossi hanno la stessa madre.</li>
+      <li class="mb-2"><b>Calendario e report:</b> scadenze per stato, stampa (anche come PDF) ed esportazione CSV per Excel.</li>
+      <li><b>Registro accessi</b> (amministratore): ogni lettura, apertura documento e pagamento viene tracciato.</li></ol>
+      <hr><p class="small text-body-secondary mb-0">I dati sono di fantasia e restano solo nel browser: ricaricando la pagina la demo riparte da zero.</p>`, '', 'modal-lg');
+  },
+
+  // ---- Iscritti
+  iscFiltro(k, v) { S.iscFiltro[k] = v; const b = $('#iscBody'); if (b) b.innerHTML = iscrittiTable(); },
+  nuovoIscritto() {
+    const sedi = allowedSedi();
+    openModal('Nuovo iscritto', `<form id="fNuovo" class="row g-2" onsubmit="event.preventDefault(); App.salvaNuovo()">
+      <div class="col-md-6"><label class="form-label small">Nome *</label><input class="form-control" id="n_nome" required></div>
+      <div class="col-md-6"><label class="form-label small">Cognome *</label><input class="form-control" id="n_cognome" required></div>
+      <div class="col-md-6"><label class="form-label small">Data di nascita *</label><input type="date" class="form-control" id="n_nascita" required oninput="App.nuovoEta()"></div>
+      <div class="col-md-6"><label class="form-label small">Codice fiscale</label><input class="form-control text-uppercase" id="n_cf" maxlength="16"></div>
+      <div class="col-12"><div id="n_eta" class="small text-body-secondary"></div></div>
+      <div class="col-md-4"><label class="form-label small">Sede *</label><select class="form-select" id="n_sede">${sedi.map(id => `<option value="${id}" ${S.sede === id ? 'selected' : ''}>${esc(sede(id).nome)}</option>`).join('')}</select></div>
+      <div class="col-md-4"><label class="form-label small">Percorso *</label><select class="form-select" id="n_perc">${DB.percorsi.map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></div>
+      <div class="col-md-4"><label class="form-label small">Quota *</label><select class="form-select" id="n_freq"><option>Mensile</option><option>Settimanale</option></select></div>
+      <div class="col-md-6"><label class="form-label small">Inizio iscrizione *</label><input type="date" class="form-control" id="n_dal" value="${TODAY}" required></div>
+      <div class="col-md-6"><label class="form-label small">Email / telefono (se maggiorenne)</label><input class="form-control" id="n_contatto" placeholder="email o telefono"></div>
+      <div class="col-12 mt-3"><h6 class="text-brand fw-bold mb-1">Genitore / tutore pagatore <span id="n_genReq" class="badge text-bg-danger d-none">obbligatorio per i minori</span></h6></div>
+      <div class="col-12"><select class="form-select" id="n_genSel" onchange="App.nuovoGenToggle()"><option value="">- Nuovo genitore -</option><option value="none">Nessuno (iscritto maggiorenne)</option>
+        ${DB.genitori.slice().sort((a, b) => a.cognome.localeCompare(b.cognome)).map(g => `<option value="${g.id}">${esc(g.cognome)} ${esc(g.nome)} (già presente)</option>`).join('')}</select></div>
+      <div id="n_genNew" class="row g-2 m-0 p-0">
+        <div class="col-md-6"><label class="form-label small">Nome</label><input class="form-control" id="g_nome"></div>
+        <div class="col-md-6"><label class="form-label small">Cognome</label><input class="form-control" id="g_cognome"></div>
+        <div class="col-md-6"><label class="form-label small">Email</label><input type="email" class="form-control" id="g_email"></div>
+        <div class="col-md-6"><label class="form-label small">Telefono</label><input class="form-control" id="g_tel"></div>
+      </div>
+      <div class="col-md-6"><label class="form-label small">Parentela</label><select class="form-select" id="g_par"><option>Madre</option><option>Padre</option><option>Tutore</option><option>Altro</option></select></div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div>
+      </form>`, `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fNuovo">Salva iscritto</button>`, 'modal-lg');
+  },
+  nuovoEta() {
+    const v = $('#n_nascita').value; if (!v) return;
+    const a = eta(v), min = a < 18;
+    $('#n_eta').innerHTML = `${a} anni: <b class="${min ? 'text-danger' : 'text-success'}">${min ? 'minorenne, serve un genitore o tutore pagatore' : 'maggiorenne, può essere lui il pagatore'}</b>`;
+    $('#n_genReq').classList.toggle('d-none', !min);
+  },
+  nuovoGenToggle() { $('#n_genNew').classList.toggle('d-none', $('#n_genSel').value !== ''); },
+  salvaNuovo() {
+    const v = id => ($(id).value || '').trim();
+    const nascita = v('#n_nascita'), cf = v('#n_cf').toUpperCase(), sel = v('#n_genSel');
+    if (!v('#n_nome') || !v('#n_cognome') || !nascita) return formErr('Compila i campi obbligatori.');
+    if (nascita > TODAY) return formErr('La data di nascita non può essere nel futuro.');
+    if (cf && !/^[A-Z0-9]{16}$/.test(cf)) return formErr('Il codice fiscale deve avere 16 caratteri alfanumerici.');
+    if (cf && DB.iscritti.some(s => s.cf === cf)) return formErr('Esiste già un iscritto con questo codice fiscale.');
+    const minore = eta(nascita) < 18;
+    if (minore && sel === 'none') return formErr('Per un iscritto minorenne serve un genitore o tutore pagatore.');
+    if (sel === '' && (minore || v('#g_nome'))) {
+      if (!v('#g_nome') || !v('#g_cognome')) return formErr('Indica nome e cognome del genitore.');
+      if (!v('#g_email') && !v('#g_tel')) return formErr('Indica almeno email o telefono del genitore: servono per le notifiche.');
+    }
+    const c = v('#n_contatto');
+    const s = { id:nextId('iscritto'), nome:v('#n_nome'), cognome:v('#n_cognome'), nascita, cf, indirizzo:'', email:c.includes('@') ? c : '', telefono:c.includes('@') ? '' : c,
+      frequenza:v('#n_freq'), giorni:[1,3], ore:1.5, note:'' };
+    DB.iscritti.push(s);
+    DB.iscrizioni.push({ id:nextId('iscrizione'), iscrittoId:s.id, sedeId:+v('#n_sede'), percorsoId:+v('#n_perc'), dal:v('#n_dal'), al:null });
+    let gid = null;
+    if (sel === '' && v('#g_nome')) { gid = nextId('genitore'); DB.genitori.push({ id:gid, nome:v('#g_nome'), cognome:v('#g_cognome'), email:v('#g_email'), telefono:v('#g_tel') }); }
+    else if (sel && sel !== 'none') gid = +sel;
+    if (gid) DB.legami.push({ iscrittoId:s.id, genitoreId:gid, parentela:v('#g_par'), pagatore:true });
+    audit('Creazione', 'Nuovo iscritto: ' + nomeIsc(s), +v('#n_sede'));
+    invalidate(); closeModal();
+    toast('Iscritto creato');
+    location.hash = '#/iscritto/' + s.id;
+  },
+  salvaDati(id) {
+    const s = isc(id), v = k => ($(k).value || '').trim();
+    const cf = v('#f_cf').toUpperCase();
+    if (!v('#f_nome') || !v('#f_cognome') || !v('#f_nascita')) return formErr('Nome, cognome e data di nascita sono obbligatori.');
+    if (cf && !/^[A-Z0-9]{16}$/.test(cf)) return formErr('Il codice fiscale deve avere 16 caratteri alfanumerici.');
+    Object.assign(s, { nome:v('#f_nome'), cognome:v('#f_cognome'), nascita:v('#f_nascita'), cf, indirizzo:v('#f_ind'), email:v('#f_email'), telefono:v('#f_tel'), note:v('#f_note') });
+    audit('Modifica', 'Dati anagrafici: ' + nomeIsc(s), iscrizioneCorrente(id).sedeId);
+    invalidate(); toast('Dati salvati'); renderMain();
+  },
+  schedaPresenze(id, m) {
+    const el = $('#schedaPres'); if (!el) return;
+    const pr = DB.presenze.filter(p => p.iscrittoId === id && p.data.startsWith(m)).sort((a, b) => a.data.localeCompare(b.data));
+    el.innerHTML = pr.length ? `<div class="table-responsive"><table class="table table-sm small mb-0"><thead class="table-light"><tr><th>Data</th><th>Sede</th><th class="text-end">Ore</th><th class="text-end">Prezzo applicato</th><th class="text-end">Importo</th></tr></thead>
+      <tbody>${pr.map(p => `<tr><td>${GG[D.dow(p.data)]} ${D.it(p.data)}</td><td>${esc(sede(p.sedeId).nome)}</td><td class="text-end">${fnum(p.ore)}</td><td class="text-end">${eur(p.prezzo)}</td><td class="text-end">${eur(p.ore * p.prezzo)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr class="fw-bold"><td colspan="2">Totale ${D.mese(m)}</td><td class="text-end">${fnum(pr.reduce((s, p) => s + p.ore, 0))}</td><td></td><td class="text-end">${eur(pr.reduce((s, p) => s + p.ore * p.prezzo, 0))}</td></tr></tfoot></table></div>`
+      : '<p class="text-body-secondary small">Nessuna presenza nel mese.</p>';
+  },
+  setPagatore(sid, gid) {
+    DB.legami.filter(l => l.iscrittoId === sid).forEach(l => { l.pagatore = l.genitoreId === gid; });
+    audit('Modifica', 'Cambio pagatore: ' + nomeIsc(isc(sid))); invalidate(); toast('Pagatore aggiornato'); renderMain();
+  },
+  rimuoviGenitore(sid, gid) {
+    const s = isc(sid), l = DB.legami.find(x => x.iscrittoId === sid && x.genitoreId === gid);
+    const altri = DB.legami.filter(x => x.iscrittoId === sid && x.genitoreId !== gid);
+    if (isMinore(s) && l.pagatore && !altri.length) { toast('Un minore deve avere almeno un genitore pagatore: aggiungine un altro prima di rimuovere questo.', 'danger'); return; }
+    DB.legami.splice(DB.legami.indexOf(l), 1);
+    if (l.pagatore && altri.length) altri[0].pagatore = true;
+    audit('Modifica', 'Rimosso genitore da ' + nomeIsc(s)); invalidate(); toast('Genitore rimosso'); renderMain();
+  },
+  aggiungiGenitore(sid) {
+    const gia = DB.legami.filter(l => l.iscrittoId === sid).map(l => l.genitoreId);
+    openModal('Aggiungi genitore / tutore', `<form id="fGen" class="row g-2" onsubmit="event.preventDefault(); App.salvaGenitore(${sid})">
+      <div class="col-12"><select class="form-select" id="n_genSel" onchange="App.nuovoGenToggle()"><option value="">- Nuovo genitore -</option>
+        ${DB.genitori.filter(g => !gia.includes(g.id)).sort((a, b) => a.cognome.localeCompare(b.cognome)).map(g => `<option value="${g.id}">${esc(g.cognome)} ${esc(g.nome)}</option>`).join('')}</select></div>
+      <div id="n_genNew" class="row g-2 m-0 p-0">
+        <div class="col-md-6"><label class="form-label small">Nome</label><input class="form-control" id="g_nome"></div>
+        <div class="col-md-6"><label class="form-label small">Cognome</label><input class="form-control" id="g_cognome"></div>
+        <div class="col-md-6"><label class="form-label small">Email</label><input type="email" class="form-control" id="g_email"></div>
+        <div class="col-md-6"><label class="form-label small">Telefono</label><input class="form-control" id="g_tel"></div></div>
+      <div class="col-md-6"><label class="form-label small">Parentela</label><select class="form-select" id="g_par"><option>Madre</option><option>Padre</option><option>Tutore</option><option>Altro</option></select></div>
+      <div class="col-md-6 d-flex align-items-end"><div class="form-check"><input class="form-check-input" type="checkbox" id="g_pag" ${gia.length ? '' : 'checked'}><label class="form-check-label" for="g_pag">Pagatore</label></div></div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fGen">Aggiungi</button>`);
+  },
+  salvaGenitore(sid) {
+    const v = id => ($(id).value || '').trim(), sel = v('#n_genSel');
+    let gid = +sel;
+    if (!sel) {
+      if (!v('#g_nome') || !v('#g_cognome')) return formErr('Indica nome e cognome.');
+      if (!v('#g_email') && !v('#g_tel')) return formErr('Indica almeno email o telefono.');
+      gid = nextId('genitore'); DB.genitori.push({ id:gid, nome:v('#g_nome'), cognome:v('#g_cognome'), email:v('#g_email'), telefono:v('#g_tel') });
+    }
+    const pag = $('#g_pag').checked;
+    if (pag) DB.legami.filter(l => l.iscrittoId === sid).forEach(l => { l.pagatore = false; });
+    DB.legami.push({ iscrittoId:sid, genitoreId:gid, parentela:v('#g_par'), pagatore:pag });
+    audit('Modifica', 'Aggiunto genitore a ' + nomeIsc(isc(sid))); invalidate(); closeModal(); toast('Genitore aggiunto'); renderMain();
+  },
+  trasferisci(sid) {
+    const i = iscrizioneCorrente(sid);
+    openModal('Trasferisci sede / percorso', `<form id="fTr" class="row g-2" onsubmit="event.preventDefault(); App.salvaTrasf(${sid})">
+      <div class="col-md-6"><label class="form-label small">Nuova sede</label><select class="form-select" id="t_sede">${allowedSedi().map(id => `<option value="${id}" ${id === i.sedeId ? 'selected' : ''}>${esc(sede(id).nome)}</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label small">Percorso</label><select class="form-select" id="t_perc">${DB.percorsi.map(p => `<option value="${p.id}" ${p.id === i.percorsoId ? 'selected' : ''}>${esc(p.nome)}</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label small">Dal</label><input type="date" class="form-control" id="t_dal" value="${D.add(TODAY, 1)}"></div>
+      <div class="col-12 small text-body-secondary">L'iscrizione attuale viene chiusa il giorno prima: lo storico resta consultabile.</div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fTr">Conferma</button>`);
+  },
+  salvaTrasf(sid) {
+    const i = iscrizioneCorrente(sid), sd = +$('#t_sede').value, pc = +$('#t_perc').value, dal = $('#t_dal').value;
+    if (sd === i.sedeId && pc === i.percorsoId) return formErr('Nessuna modifica rispetto all\'iscrizione attuale.');
+    if (!dal || dal <= i.dal) return formErr('La data deve essere successiva all\'inizio dell\'iscrizione attuale.');
+    if (DB.presenze.some(p => p.iscrittoId === sid && p.data >= dal)) return formErr('Esistono presenze registrate dopo questa data.');
+    i.al = D.add(dal, -1); i.motivo = 'Trasferimento';
+    DB.iscrizioni.push({ id:nextId('iscrizione'), iscrittoId:sid, sedeId:sd, percorsoId:pc, dal, al:null });
+    audit('Modifica', `Trasferimento ${nomeIsc(isc(sid))} a ${sede(sd).nome}`, sd); invalidate(); closeModal(); toast('Iscrizione aggiornata');
+    if (!allowedSedi().includes(sd)) location.hash = '#/iscritti'; else renderMain();
+  },
+  chiudiIscrizione(sid) {
+    openModal('Chiudi iscrizione', `<form id="fCh" class="row g-2" onsubmit="event.preventDefault(); App.salvaChiusura(${sid})">
+      <div class="col-md-6"><label class="form-label small">Data di fine</label><input type="date" class="form-control" id="c_al" value="${TODAY}"></div>
+      <div class="col-md-6"><label class="form-label small">Motivo</label><input class="form-control" id="c_mot" value="Percorso concluso"></div>
+      <div class="col-12 small text-body-secondary">Le quote e i documenti restano consultabili. I dati vanno poi cancellati secondo la politica di conservazione.</div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-danger" type="submit" form="fCh">Chiudi iscrizione</button>`);
+  },
+  salvaChiusura(sid) {
+    const i = iscrizioneCorrente(sid), al = $('#c_al').value;
+    if (!al || al < i.dal) return formErr('Data non valida.');
+    if (DB.presenze.some(p => p.iscrittoId === sid && p.data > al)) return formErr('Esistono presenze dopo questa data.');
+    i.al = al; i.motivo = $('#c_mot').value;
+    audit('Modifica', 'Chiusura iscrizione: ' + nomeIsc(isc(sid)), i.sedeId); invalidate(); closeModal(); toast('Iscrizione chiusa'); renderMain();
+  },
+
+  // ---- Presenze
+  presWeek(n) { S.presWeek = n === 0 ? D.weekStart(TODAY) : D.add(S.presWeek, n); renderMain(); },
+  presSede(v) { S.presSede = +v; renderMain(); },
+  presCalc() {
+    let to = 0, ti = 0;
+    document.querySelectorAll('tr[data-row]').forEach(tr => {
+      let o = 0, imp = 0;
+      tr.querySelectorAll('input.pres-input').forEach(inp => {
+        const h = Math.max(0, parseFloat(inp.value) || 0);
+        o += h; imp += h * +inp.dataset.prezzo;
+        inp.classList.toggle('changed', h !== +inp.dataset.orig);
+      });
+      tr.querySelector('[data-ore]').textContent = fnum(o);
+      tr.querySelector('[data-imp]').textContent = eur(imp);
+      to += o; ti += imp;
+    });
+    if ($('#totOre')) { $('#totOre').textContent = fnum(to); $('#totImp').textContent = eur(ti); }
+  },
+  presPrevisto() {
+    let n = 0;
+    document.querySelectorAll('input.pres-input:not([disabled])').forEach(inp => { if (!inp.value && +inp.dataset.plan) { inp.value = inp.dataset.plan; n++; } });
+    App.presCalc(); toast(n ? `${n} celle compilate con la frequenza prevista. Ricorda di salvare.` : 'Nessuna cella vuota da compilare.', n ? 'primary' : 'secondary');
+  },
+  presSalva() {
+    const inputs = [...document.querySelectorAll('input.pres-input:not([disabled])')];
+    for (const inp of inputs) {
+      const h = parseFloat(inp.value) || 0;
+      if (h < 0 || h > 8 || Math.round(h * 2) !== h * 2) { inp.focus(); toast('Le ore devono essere tra 0 e 8, a passi di mezz\'ora.', 'danger'); return; }
+    }
+    let n = 0;
+    for (const inp of inputs) {
+      const h = parseFloat(inp.value) || 0, orig = +inp.dataset.orig;
+      if (h === orig) continue;
+      const sid = +inp.dataset.s, d = inp.dataset.d;
+      const ex = DB.presenze.find(p => p.iscrittoId === sid && p.data === d);
+      if (h > 0 && ex) ex.ore = h;
+      else if (h > 0) { const i = DB.iscrizioni.find(x => x.id === +inp.dataset.i); DB.presenze.push({ id:nextId('presenza'), iscrittoId:sid, iscrizioneId:i.id, sedeId:i.sedeId, data:d, ore:h, prezzo:+inp.dataset.prezzo }); }
+      else if (ex) DB.presenze.splice(DB.presenze.indexOf(ex), 1);
+      n++;
+    }
+    if (!n) { toast('Nessuna modifica da salvare.', 'secondary'); return; }
+    audit('Presenze', `${n} modifiche, settimana ${D.it(S.presWeek)}`, S.presSede);
+    invalidate(); toast(`Salvate ${n} modifiche. Le quote sono state ricalcolate.`); renderMain();
+  },
+
+  // ---- Quote
+  quoteFiltro(k, v) { S.quoteFiltro[k] = v; if (k !== 'page') S.quoteFiltro.page = 1; renderMain(); },
+  dettaglioQuota(key) {
+    const q = quotaByKey(key); if (!q) return;
+    const s = isc(q.iscrittoId);
+    const pr = DB.presenze.filter(p => p.iscrittoId === s.id && p.data >= q.dal && p.data <= q.al).sort((a, b) => a.data.localeCompare(b.data));
+    const pg = DB.pagamenti.filter(p => p.key === key);
+    openModal(`Quota ${periodo(q)}`, `
+      <div class="d-flex justify-content-between flex-wrap gap-2 mb-3"><div><div class="fw-semibold">${esc(nomeIsc(s))}</div><div class="small text-body-secondary">Pagatore: ${esc(q.pagatore.nome)} (${esc(q.pagatore.ruolo)})</div></div>
+        <div class="text-end">${badge(q.stato)}<div class="small text-body-secondary mt-1">Scadenza ${D.it(q.scadenza)}</div></div></div>
+      <div class="row g-2 text-center mb-3">
+        <div class="col-4"><div class="border rounded p-2"><div class="small text-body-secondary">Totale</div><b>${eur(q.totale)}</b></div></div>
+        <div class="col-4"><div class="border rounded p-2"><div class="small text-body-secondary">Pagato</div><b>${eur(q.pagato)}</b></div></div>
+        <div class="col-4"><div class="border rounded p-2"><div class="small text-body-secondary">Residuo</div><b class="${q.residuo > 0 ? 'text-danger' : 'text-success'}">${eur(q.residuo)}</b></div></div></div>
+      <h6 class="text-brand fw-bold">Presenze del periodo (${pr.length})</h6>
+      <div class="table-responsive" style="max-height:220px"><table class="table table-sm small"><thead class="table-light"><tr><th>Data</th><th class="text-end">Ore</th><th class="text-end">Prezzo</th><th class="text-end">Importo</th></tr></thead>
+        <tbody>${pr.map(p => `<tr><td>${GG[D.dow(p.data)]} ${D.it(p.data)}</td><td class="text-end">${fnum(p.ore)}</td><td class="text-end">${eur(p.prezzo)}</td><td class="text-end">${eur(p.ore * p.prezzo)}</td></tr>`).join('')}</tbody></table></div>
+      <h6 class="text-brand fw-bold mt-2">Pagamenti</h6>
+      ${pg.length ? `<table class="table table-sm small"><thead class="table-light"><tr><th>Data</th><th>Metodo</th><th>Registrato da</th><th class="text-end">Importo</th></tr></thead>
+        <tbody>${pg.map(p => `<tr><td>${D.it(p.data)}</td><td>${esc(p.metodo)}</td><td>${esc(p.by)}</td><td class="text-end">${eur(p.importo)}</td></tr>`).join('')}</tbody></table>` : '<p class="small text-body-secondary">Nessun pagamento registrato.</p>'}
+      <h6 class="text-brand fw-bold mt-2">Fattura (emessa con Aruba)</h6>
+      ${isAdmin() ? `<div class="input-group input-group-sm"><span class="input-group-text">Numero</span><input class="form-control" id="q_fatt" value="${esc(q.fattura || '')}" placeholder="es. FT-2026/0123">
+          <button class="btn btn-outline-primary" onclick="App.salvaFattura('${key}')">Salva</button></div><div class="small text-body-secondary mt-1">La fattura si emette su Aruba: qui si registra solo il numero.</div>`
+        : `<p class="small mb-0">${q.fattura ? esc(q.fattura) : 'Non ancora fatturata (la gestisce l\'amministratore).'}</p>`}`,
+      `${q.residuo > 0.004 ? `<button class="btn btn-outline-primary" onclick="App.pagamento('${key}')"><i class="bi bi-cash"></i> Registra pagamento</button>` : ''}
+       ${q.residuo > 0.004 && q.stato !== 'In corso' ? `<button class="btn btn-outline-warning" onclick="App.sollecito('${key}')"><i class="bi bi-send"></i> Sollecito</button>` : ''}
+       <button class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>`, 'modal-lg');
+  },
+  salvaFattura(key) {
+    const v = $('#q_fatt').value.trim();
+    if (v) DB.fatture[key] = v; else delete DB.fatture[key];
+    audit('Fattura', `Numero fattura ${v || '(rimosso)'} su quota ${key}`); invalidate(); toast('Numero fattura salvato'); closeModal(); renderMain();
+  },
+  pagamento(key) {
+    const q = quotaByKey(key), s = isc(q.iscrittoId);
+    openModal('Registra pagamento', `<form id="fPag" class="row g-2" onsubmit="event.preventDefault(); App.salvaPagamento('${key}')">
+      <div class="col-12 small mb-2"><b>${esc(nomeIsc(s))}</b> - ${periodo(q)}<br>Pagatore: ${esc(q.pagatore.nome)} | Residuo: <b>${eur(q.residuo)}</b></div>
+      <div class="col-md-6"><label class="form-label small">Importo (EUR)</label><input type="number" step="0.01" min="0.01" max="${q.residuo}" class="form-control" id="p_imp" value="${q.residuo.toFixed(2)}" required></div>
+      <div class="col-md-6"><label class="form-label small">Data</label><input type="date" class="form-control" id="p_data" value="${TODAY}" max="${TODAY}" required></div>
+      <div class="col-md-6"><label class="form-label small">Metodo</label><select class="form-select" id="p_met"><option>Bonifico</option><option>Contanti</option><option>POS</option><option>Assegno</option></select></div>
+      <div class="col-md-6"><label class="form-label small">Note</label><input class="form-control" id="p_note"></div>
+      ${q.stato === 'In corso' ? '<div class="col-12 small text-warning-emphasis"><i class="bi bi-info-circle"></i> Il periodo è ancora in corso: è un acconto sul maturato fino a oggi.</div>' : ''}
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fPag">Registra</button>`);
+  },
+  salvaPagamento(key) {
+    const q = quotaByKey(key), imp = r2(parseFloat($('#p_imp').value) || 0), data = $('#p_data').value;
+    if (imp <= 0) return formErr('Inserisci un importo maggiore di zero.');
+    if (imp > q.residuo + 0.001) return formErr(`L'importo supera il residuo (${eur(q.residuo)}).`);
+    if (!data || data > TODAY) return formErr('La data non può essere nel futuro.');
+    DB.pagamenti.push({ id:nextId('pagamento'), key, iscrittoId:q.iscrittoId, importo:imp, data, metodo:$('#p_met').value, note:$('#p_note').value, by:userName() });
+    audit('Pagamento', `${eur(imp)} - ${nomeIsc(isc(q.iscrittoId))}, ${periodo(q)}`, iscrizioneCorrente(q.iscrittoId).sedeId);
+    invalidate(); closeModal(); toast(`Pagamento di ${eur(imp)} registrato`); renderMain();
+  },
+  sollecito(key) {
+    const q = quotaByKey(key), p = q.pagatore;
+    const msg = `Gentile ${p.nome},\nle ricordiamo il pagamento della quota di ${periodo(q).replace('Sett.', 'settimana')} di ${eur(q.residuo)}, con scadenza ${D.it(q.scadenza)}.\nRiferimento: Q-${key.replace('|', '-')}.\nPer informazioni può contattare la segreteria.\nCordiali saluti`;
+    const prev = DB.notifiche.filter(n => n.key === key);
+    openModal('Invia sollecito di pagamento', `
+      <div class="small mb-2">Destinatario: <b>${esc(p.nome)}</b> (${esc(p.ruolo)})</div>
+      <div class="d-flex flex-wrap gap-3 mb-3 small">
+        <div class="form-check"><input class="form-check-input" type="radio" name="canale" id="ch_mail" value="Email" ${p.email ? 'checked' : 'disabled'} onchange="App.smsCount()">
+          <label class="form-check-label" for="ch_mail"><i class="bi bi-envelope"></i> Email ${p.email ? esc(p.email) : '(non presente)'}</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="canale" id="ch_sms" value="SMS" ${!p.email && p.telefono ? 'checked' : ''} ${p.telefono ? '' : 'disabled'} onchange="App.smsCount()">
+          <label class="form-check-label" for="ch_sms"><i class="bi bi-phone"></i> SMS ${p.telefono ? esc(p.telefono) : '(non presente)'}</label></div>
+      </div>
+      ${!p.email && !p.telefono ? '<div class="alert alert-danger small">Nessun contatto disponibile per il pagatore: aggiungi email o telefono nella scheda.</div>' : ''}
+      <label class="form-label small">Messaggio</label>
+      <textarea class="form-control" id="s_msg" rows="7" oninput="App.smsCount()">${esc(msg)}</textarea>
+      <div class="d-flex justify-content-between small mt-1"><span class="text-warning-emphasis"><i class="bi bi-shield-exclamation"></i> Solo importo e scadenza: mai informazioni sul percorso o sanitarie.</span><span id="smsCount" class="text-body-secondary"></span></div>
+      ${prev.length ? `<div class="small text-body-secondary mt-2">Solleciti già inviati per questa quota: ${prev.map(n => `${D.it(n.ts)} (${n.canale})`).join(', ')}</div>` : ''}
+      <div id="formErr" class="alert alert-danger small py-2 mt-2 d-none"></div>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" onclick="App.inviaSollecito('${key}')" ${!p.email && !p.telefono ? 'disabled' : ''}><i class="bi bi-send"></i> Invia</button>`, 'modal-lg');
+    App.smsCount();
+  },
+  smsCount() {
+    const t = $('#s_msg'), c = $('#smsCount'); if (!t || !c) return;
+    const sms = $('#ch_sms') && $('#ch_sms').checked, n = t.value.length;
+    c.textContent = sms ? `${n} caratteri, ${Math.max(1, Math.ceil(n / 153))} SMS` : `${n} caratteri`;
+  },
+  inviaSollecito(key) {
+    const q = quotaByKey(key), ch = document.querySelector('input[name=canale]:checked');
+    if (!ch) return formErr('Scegli il canale di invio.');
+    const txt = $('#s_msg').value.toLowerCase();
+    const vietate = ['diagnos','adhd','dhd','tourette','sindrome','disturbo','terapi','neuropsich'];
+    const hit = vietate.find(w => txt.includes(w));
+    if (hit) return formErr(`Il messaggio sembra contenere informazioni sanitarie ("${hit}"). Rimuovile prima di inviare.`);
+    const dest = ch.value === 'Email' ? q.pagatore.email : q.pagatore.telefono;
+    const t = new Date();
+    DB.notifiche.push({ id:nextId('notifica'), key, canale:ch.value, dest, importo:q.residuo, ts:`${TODAY}T${pad(t.getHours())}:${pad(t.getMinutes())}`, by:userName(), esito:'Inviata (simulata)' });
+    audit('Sollecito', `${ch.value} a ${q.pagatore.nome}, ${eur(q.residuo)}`, iscrizioneCorrente(q.iscrittoId).sedeId);
+    closeModal(); toast(`${ch.value} simulata inviata a ${esc(dest)}`); renderMain();
+  },
+
+  // ---- Documenti
+  docFiltro(k, v) { S.docFiltro[k] = v; renderMain(); },
+  upload(sid) {
+    if (!KMS.kek) { openModal('Cifratura non disponibile', '<p class="small mb-0">Questo browser non mette a disposizione la cifratura WebCrypto (serve una pagina aperta in modo sicuro, ad esempio da file locale o https). Il resto della demo funziona normalmente.</p>'); return; }
+    const sts = DB.iscritti.filter(s => inScope(s) && isAttivo(s)).sort((a, b) => nomeIsc(a).localeCompare(nomeIsc(b)));
+    openModal('Carica documento', `<form id="fUp" class="row g-2" onsubmit="event.preventDefault(); App.eseguiUpload()">
+      <div class="col-md-6"><label class="form-label small">Iscritto</label><select class="form-select" id="u_isc" ${sid ? 'disabled' : ''}>${sts.map(s => `<option value="${s.id}" ${s.id === sid ? 'selected' : ''}>${esc(nomeIsc(s))}</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label small">Categoria</label><select class="form-select" id="u_cat">${CATEGORIE.map(c => `<option>${c}</option>`).join('')}</select></div>
+      <div class="col-12"><label class="form-label small">File (PDF, JPG o PNG, massimo 20 MB)</label><input type="file" class="form-control" id="u_file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png" required></div>
+      <div class="col-12 small text-body-secondary">Prova con un file qualsiasi non riservato. Il file resta solo nel tuo browser.</div>
+      <div class="col-12"><ul class="list-unstyled small step-list mb-0" id="u_steps"></ul></div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fUp" id="u_btn"><i class="bi bi-lock"></i> Cifra e carica</button>`);
+  },
+  async eseguiUpload() {
+    const f = $('#u_file').files[0];
+    if (!f) return formErr('Scegli un file.');
+    if (f.size > 20 * 1048576) return formErr('Il file supera 20 MB.');
+    const okType = /\.(pdf|jpe?g|png)$/i.test(f.name);
+    if (!okType) return formErr('Formato non ammesso: solo PDF, JPG o PNG.');
+    $('#u_btn').disabled = true;
+    const ul = $('#u_steps');
+    const step = async (txt, fn) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="spinner-border spinner-border-sm text-primary me-2"></span>${txt}`;
+      ul.appendChild(li);
+      const r = await fn();
+      await new Promise(res => setTimeout(res, 280));
+      li.innerHTML = `<i class="bi bi-check-circle-fill text-success me-2"></i>${txt}`;
+      return r;
+    };
+    try {
+      const buf = await step('Lettura del file', () => f.arrayBuffer());
+      const enc = await step('Cifratura AES-256-GCM con chiave nuova (DEK) e nonce da 12 byte', () => encryptFile(buf));
+      await step(`Protezione della DEK con la chiave principale (KEK ${KMS.version}) - in produzione: Azure Key Vault`, async () => {});
+      await step('Calcolo SHA-256 per la verifica di integrità', async () => {});
+      const blobName = uuid();
+      await step(`Salvataggio del file cifrato come ${blobName.slice(0, 8)}... e dei metadati nel database`, async () => {});
+      const sid = +$('#u_isc').value;
+      const type = f.type || (/\.pdf$/i.test(f.name) ? 'application/pdf' : 'image/jpeg');
+      DB.documenti.push({ id:nextId('documento'), iscrittoId:sid, nome:f.name, categoria:$('#u_cat').value, data:TODAY, by:userName(), size:f.size, type,
+        blobName, kek:KMS.version, ct:enc.ct, iv:enc.iv, wrapped:enc.wrapped, sha:enc.sha });
+      audit('Upload documento', `${f.name} (${nomeIsc(isc(sid))})`, iscrizioneCorrente(sid).sedeId);
+      setTimeout(() => { closeModal(); toast('Documento cifrato e caricato'); renderMain(); }, 400);
+    } catch (e) {
+      formErr('Errore durante la cifratura: ' + e.message); $('#u_btn').disabled = false;
+    }
+  },
+  async apriDoc(id) {
+    const d = DB.documenti.find(x => x.id === id), s = isc(d.iscrittoId);
+    audit('Apertura documento', `${d.nome} (${nomeIsc(s)})`, iscrizioneCorrente(s.id).sedeId);
+    if (d.demo) {
+      openModal(esc(d.nome), `<div class="text-center py-4"><i class="bi bi-file-earmark-lock display-4 text-secondary"></i>
+        <p class="mt-3 mb-1">Documento di esempio: nella demo i file precaricati hanno solo i metadati.</p>
+        <p class="small text-body-secondary">Carica un tuo file per vedere la decifratura reale. L'apertura è stata comunque registrata nel registro accessi.</p></div>`);
+      return;
+    }
+    try {
+      const plain = await decryptFile(d);
+      const url = URL.createObjectURL(new Blob([plain], { type:d.type }));
+      const view = d.type.startsWith('image') ? `<img src="${url}" class="img-fluid rounded border" alt="${esc(d.nome)}">` : `<iframe src="${url}" style="width:100%;height:70vh;border:1px solid #dee2e6;border-radius:6px" title="${esc(d.nome)}"></iframe>`;
+      openModal(`<i class="bi bi-unlock"></i> ${esc(d.nome)}`, `<div class="alert alert-success small py-2"><i class="bi bi-check-circle"></i> Decifrato in memoria e integrità verificata (SHA-256). Nessuna copia in chiaro viene salvata.</div>${view}`, '', 'modal-xl');
+    } catch (e) { toast('Impossibile decifrare: ' + esc(e.message), 'danger'); }
+  },
+  async scaricaDoc(id) {
+    const d = DB.documenti.find(x => x.id === id), s = isc(d.iscrittoId);
+    audit('Download documento', `${d.nome} (${nomeIsc(s)})`, iscrizioneCorrente(s.id).sedeId);
+    if (d.demo) { toast('Documento di esempio senza contenuto: download registrato nel registro accessi.', 'secondary'); return; }
+    try {
+      const plain = await decryptFile(d);
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([plain], { type:d.type })); a.download = d.nome;
+      document.body.appendChild(a); a.click(); a.remove();
+      toast('Download avviato');
+    } catch (e) { toast('Impossibile decifrare: ' + esc(e.message), 'danger'); }
+  },
+  techDoc(id) {
+    const d = DB.documenti.find(x => x.id === id);
+    let dek, nonce, tag, sha, first;
+    if (d.demo) { dek = fakeHex(d.blobName + 'k', 32) + '...'; nonce = fakeHex(d.blobName + 'n', 12); tag = fakeHex(d.blobName + 't', 16); sha = fakeHex(d.blobName + 's', 32); first = fakeHex(d.blobName + 'c', 32) + '...'; }
+    else { const ct = new Uint8Array(d.ct); dek = toHex(d.wrapped).slice(0, 64) + '... (' + d.wrapped.byteLength + ' byte)'; nonce = toHex(d.iv); tag = toHex(ct.slice(-16)); sha = toHex(d.sha); first = toHex(ct.slice(0, 32)) + '...'; }
+    const row = (k, v) => `<tr><th class="small text-nowrap">${k}</th><td class="hex">${esc(v)}</td></tr>`;
+    openModal('Dettagli di cifratura', `<p class="small text-body-secondary">Questi sono i metadati che il database conserva accanto al documento. Senza la chiave principale nel Key Vault, il file e la DEK cifrata sono illeggibili.</p>
+      <table class="table table-sm"><tbody>
+      ${row('Nome blob', d.blobName)}${row('Nome originale', d.nome + ' (solo nel database)')}${row('Algoritmo file', 'AES-256-GCM')}${row('Chiave principale', d.kek + ' (RSA-OAEP-256)')}
+      ${row('DEK cifrata', dek)}${row('Nonce (12 byte)', nonce)}${row('Tag (16 byte)', tag)}${row('SHA-256 originale', sha)}${row('Primi byte del file cifrato', first)}
+      </tbody></table>${d.demo ? '<p class="small text-body-secondary mb-0">Documento di esempio: valori simulati.</p>' : '<p class="small text-success mb-0"><i class="bi bi-check-circle"></i> Valori reali prodotti dalla cifratura di questo file.</p>'}`, '', 'modal-lg');
+  },
+  eliminaDoc(id) {
+    const d = DB.documenti.find(x => x.id === id);
+    openModal('Eliminare il documento?', `<p class="mb-1">${esc(d.nome)}</p><p class="small text-body-secondary mb-0">Cancellazione logica: il documento non sarà più visibile e l'operazione viene registrata.</p>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-danger" onclick="App.confermaElimina(${id})">Elimina</button>`);
+  },
+  confermaElimina(id) {
+    const d = DB.documenti.find(x => x.id === id); d.eliminato = true;
+    audit('Eliminazione documento', `${d.nome} (${nomeIsc(isc(d.iscrittoId))})`); closeModal(); toast('Documento eliminato'); renderMain();
+  },
+
+  // ---- Calendario
+  calMove(n) {
+    if (n === 0) { S.cal = { y:+TODAY.slice(0, 4), m:+TODAY.slice(5, 7) }; }
+    else { let { y, m } = S.cal; m += n; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } S.cal = { y, m }; }
+    renderMain();
+  },
+  calGiorno(d) {
+    const ids = new Set(DB.iscritti.filter(inScope).map(s => s.id));
+    const qs = quote().filter(q => ids.has(q.iscrittoId) && q.scadenza === d);
+    openModal(`Scadenze del ${D.it(d)}`, `<div class="table-responsive"><table class="table table-sm align-middle small mb-0"><thead class="table-light"><tr><th>Iscritto / pagatore</th><th>Periodo</th><th class="text-end">Residuo</th><th>Stato</th><th></th></tr></thead>
+      <tbody>${qs.map(q => `<tr><td><b>${esc(nomeIsc(isc(q.iscrittoId)))}</b><div class="text-body-secondary">${esc(q.pagatore.nome)}</div></td><td>${periodo(q)}</td><td class="text-end">${eur(q.residuo)}</td><td>${badge(q.stato)}</td><td class="text-end">${quoteActions(q)}</td></tr>`).join('')}</tbody></table></div>`, '', 'modal-lg');
+  },
+
+  // ---- Report
+  rep(k, v) { S.rep[k] = (k === 'sede') ? +v : v; renderMain(); },
+  stampa() { audit('Stampa', `Report ${S.rep.tipo} ${S.rep.mese}`); window.print(); },
+  csv() {
+    const d = reportData();
+    const cell = c => `"${String(c).replace(/"/g, '""')}"`;
+    const lines = [d.head, ...d.rows, d.tot].map(r => r.map(cell).join(';'));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type:'text/csv;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = `report-${S.rep.tipo}-${S.rep.mese}.csv`;
+    document.body.appendChild(a); a.click(); a.remove();
+    audit('Esportazione', `CSV ${S.rep.tipo} ${S.rep.mese}`); toast('File CSV scaricato (si apre con Excel)');
+  },
+
+  // ---- Admin
+  adminTab(t) { S.adminTab = t; renderMain(); },
+  auditFiltro(k, v) { S.auditFiltro[k] = v; renderMain(); },
+  utente(id) {
+    const u = id ? DB.utenti.find(x => x.id === id) : { nome:'', cognome:'', email:'', ruolo:'Segreteria', sedi:[], attivo:true };
+    openModal(id ? 'Modifica utente' : 'Nuovo utente', `<form id="fUt" class="row g-2" onsubmit="event.preventDefault(); App.salvaUtente(${id || 0})">
+      ${id ? '' : `<div class="col-12"><div class="alert alert-secondary small py-2"><b>Versione 1:</b> crea prima l'account nel portale Azure (Entra ID), poi autorizzalo qui con ruolo e sedi.</div></div>`}
+      <div class="col-md-6"><label class="form-label small">Nome</label><input class="form-control" id="u_nome" value="${esc(u.nome)}" required></div>
+      <div class="col-md-6"><label class="form-label small">Cognome</label><input class="form-control" id="u_cognome" value="${esc(u.cognome)}" required></div>
+      <div class="col-12"><label class="form-label small">Email dell'account Microsoft</label><input type="email" class="form-control" id="u_email" value="${esc(u.email)}" ${id ? 'readonly' : ''} required placeholder="nome@struttura.onmicrosoft.com"></div>
+      <div class="col-md-6"><label class="form-label small">Ruolo</label><select class="form-select" id="u_ruolo" onchange="App.utRuolo()" ${id === S.user.id ? 'disabled' : ''}>
+        ${['Segreteria','Amministratore'].map(r => `<option ${u.ruolo === r ? 'selected' : ''}>${r}</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label small">Sedi accessibili</label><div id="u_sedi">${DB.sedi.map(s => `<div class="form-check"><input class="form-check-input" type="checkbox" value="${s.id}" id="us${s.id}" ${u.sedi.includes(s.id) ? 'checked' : ''}><label class="form-check-label small" for="us${s.id}">${esc(s.nome)}</label></div>`).join('')}</div></div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fUt">Salva</button>`);
+    App.utRuolo();
+  },
+  utRuolo() { const adm = $('#u_ruolo').value === 'Amministratore'; document.querySelectorAll('#u_sedi input').forEach(c => { c.disabled = adm; if (adm) c.checked = true; }); },
+  salvaUtente(id) {
+    const v = k => ($(k).value || '').trim();
+    const sedi = [...document.querySelectorAll('#u_sedi input:checked')].map(c => +c.value);
+    const ruolo = v('#u_ruolo'), email = v('#u_email').toLowerCase();
+    if (!v('#u_nome') || !v('#u_cognome')) return formErr('Nome e cognome sono obbligatori.');
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return formErr('Email non valida.');
+    if (!id && DB.utenti.some(u => u.email === email)) return formErr('Utente già presente.');
+    if (ruolo !== 'Amministratore' && !sedi.length) return formErr('Assegna almeno una sede.');
+    if (id) { Object.assign(DB.utenti.find(u => u.id === id), { nome:v('#u_nome'), cognome:v('#u_cognome'), ruolo, sedi:ruolo === 'Amministratore' ? DB.sedi.map(s => s.id) : sedi }); audit('Modifica utente', email); }
+    else { DB.utenti.push({ id:nextId('utente'), nome:v('#u_nome'), cognome:v('#u_cognome'), email, ruolo, sedi:ruolo === 'Amministratore' ? DB.sedi.map(s => s.id) : sedi, attivo:true, oid:uuid() }); audit('Creazione utente', email); }
+    closeModal(); toast('Utente salvato'); renderMain();
+  },
+  toggleUtente(id) { const u = DB.utenti.find(x => x.id === id); u.attivo = !u.attivo; audit(u.attivo ? 'Attivazione utente' : 'Disattivazione utente', u.email); toast(u.attivo ? 'Utente attivato' : 'Utente disattivato'); renderMain(); },
+  nuovaSede() {
+    openModal('Nuova sede', `<form id="fSe" class="row g-2" onsubmit="event.preventDefault(); App.salvaSede()">
+      <div class="col-12"><label class="form-label small">Nome</label><input class="form-control" id="se_nome" required></div>
+      <div class="col-12"><label class="form-label small">Indirizzo</label><input class="form-control" id="se_ind"></div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fSe">Salva</button>`);
+  },
+  salvaSede() {
+    const n = $('#se_nome').value.trim();
+    if (!n) return formErr('Indica il nome.');
+    if (DB.sedi.some(s => s.nome.toLowerCase() === n.toLowerCase())) return formErr('Esiste già una sede con questo nome.');
+    const id = nextId('sede'); DB.sedi.push({ id, nome:n, indirizzo:$('#se_ind').value.trim(), attiva:true });
+    DB.utenti.filter(u => u.ruolo === 'Amministratore').forEach(u => u.sedi.push(id));
+    audit('Creazione sede', n); closeModal(); $('#sedeSel').innerHTML = sedeOptions(); toast('Sede creata'); renderMain();
+  },
+  nuovaTariffa() {
+    openModal('Nuova tariffa', `<form id="fTa" class="row g-2" onsubmit="event.preventDefault(); App.salvaTariffa()">
+      <div class="col-md-6"><label class="form-label small">Sede</label><select class="form-select" id="ta_sede"><option value="">Tutte</option>${DB.sedi.map(s => `<option value="${s.id}">${esc(s.nome)}</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label small">Percorso</label><select class="form-select" id="ta_perc"><option value="">Tutti</option>${DB.percorsi.map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('')}</select></div>
+      <div class="col-md-6"><label class="form-label small">Prezzo orario (EUR)</label><input type="number" step="0.5" min="1" class="form-control" id="ta_prezzo" required></div>
+      <div class="col-md-6"><label class="form-label small">Valida dal</label><input type="date" class="form-control" id="ta_dal" value="${D.add(TODAY, 10)}" required></div>
+      <div class="col-12 small text-body-secondary">La tariffa precedente con la stessa sede e percorso viene chiusa il giorno prima. Le presenze già registrate non cambiano.</div>
+      <div class="col-12"><div id="formErr" class="alert alert-danger small py-2 d-none"></div></div></form>`,
+      `<button class="btn btn-outline-secondary" data-bs-dismiss="modal">Annulla</button><button class="btn btn-brand" type="submit" form="fTa">Salva</button>`);
+  },
+  salvaTariffa() {
+    const sd = $('#ta_sede').value ? +$('#ta_sede').value : null, pc = $('#ta_perc').value ? +$('#ta_perc').value : null;
+    const prezzo = parseFloat($('#ta_prezzo').value), dal = $('#ta_dal').value;
+    if (!(prezzo > 0)) return formErr('Prezzo non valido.');
+    if (prezzo > 200) return formErr('Prezzo orario insolitamente alto: controlla il valore.');
+    if (!dal) return formErr('Indica la data di inizio.');
+    const prev = DB.tariffe.find(t => t.sedeId === sd && t.percorsoId === pc && !t.al);
+    if (prev && prev.dal >= dal) return formErr('La data deve essere successiva all\'inizio della tariffa attuale (' + D.it(prev.dal) + ').');
+    if (prev) prev.al = D.add(dal, -1);
+    DB.tariffe.push({ id:nextId('tariffa'), sedeId:sd, percorsoId:pc, prezzo, dal, al:null });
+    audit('Modifica tariffa', `${eur(prezzo)}/ora dal ${D.it(dal)}`, sd); closeModal(); toast('Tariffa salvata'); renderMain();
+  },
+};
+window.App = App;
+
+/* ============================ AVVIO ============================ */
+seed();
+KMS.init();
+renderLogin();
+</script>
+</body>
+</html>
